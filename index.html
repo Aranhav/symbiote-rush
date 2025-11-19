@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Primary Meta Tags -->
+    <title>Symbiote Rush - Spider-Verse Edition | Free Browser Game</title>
+    <meta name="title" content="Symbiote Rush - Spider-Verse Edition | Free Browser Game">
+    <meta name="description" content="Play Symbiote Rush, an action-packed endless runner game featuring Venom in Spider-Verse comic book style. Dodge NYC obstacles, avoid Green Goblin's pumpkin bombs, and survive Electro's lightning strikes!">
+    <meta name="keywords" content="symbiote rush, venom game, spider-verse game, endless runner, browser game, free game, comic book game, green goblin, electro, nyc game, marvel game">
+    <meta name="author" content="Symbiote Rush">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://symbiote-rush.up.railway.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://symbiote-rush.up.railway.app/">
+    <meta property="og:title" content="Symbiote Rush - Spider-Verse Edition">
+    <meta property="og:description" content="Play as Venom in this action-packed endless runner with Spider-Verse comic book aesthetics. Dodge taxis, lightning, and pumpkin bombs!">
+    <meta property="og:image" content="https://symbiote-rush.up.railway.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Symbiote Rush">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://symbiote-rush.up.railway.app/">
+    <meta property="twitter:title" content="Symbiote Rush - Spider-Verse Edition">
+    <meta property="twitter:description" content="Play as Venom in this action-packed endless runner with Spider-Verse comic book aesthetics. Dodge taxis, lightning, and pumpkin bombs!">
+    <meta property="twitter:image" content="https://symbiote-rush.up.railway.app/og-image.png">
+
+    <!-- Additional Meta -->
+    <meta name="theme-color" content="#ff1493">
+    <meta name="msapplication-TileColor" content="#ff1493">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Symbiote Rush">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Symbiote Rush">
+
+    <!-- Structured Data / Schema.org -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Symbiote Rush - Spider-Verse Edition",
+        "description": "An action-packed endless runner game featuring Venom in Spider-Verse comic book style. Dodge NYC obstacles, avoid Green Goblin's pumpkin bombs, and survive Electro's lightning strikes!",
+        "url": "https://symbiote-rush.up.railway.app/",
+        "genre": ["Endless Runner", "Action", "Arcade"],
+        "gamePlatform": ["Web Browser", "Mobile Browser"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "Symbiote Rush"
+        },
+        "gameItem": [
+            {
+                "@type": "Thing",
+                "name": "Venom",
+                "description": "The main playable character"
+            },
+            {
+                "@type": "Thing",
+                "name": "Green Goblin",
+                "description": "Flying enemy that throws pumpkin bombs"
+            }
+        ]
+    }
+    </script>
+
+    <!-- Favicon (data URI for single file) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕷️</text></svg>">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            color: #fff;
+            font-family: 'Bangers', cursive;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, #0d0d2b 0%, #1a1a3a 100%);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .score-container {
+            position: absolute;
+            top: 20px; right: 30px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #fff;
+            background: linear-gradient(135deg, #ff1493, #00bfff);
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(255, 20, 147, 0.4);
+            z-index: 20;
+        }
+
+        #start-screen {
+            text-align: center;
+            z-index: 25;
+        }
+
+        #start-text {
+            font-size: 38px;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255, 20, 147, 0.8), 0 0 60px rgba(0, 191, 255, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        #game-over-screen {
+            display: none;
+            text-align: center;
+            z-index: 30;
+            background: rgba(10, 10, 30, 0.95);
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 0 60px rgba(255, 20, 147, 0.5);
+        }
+
+        #game-over-text {
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 20px #ff1493;
+            margin-bottom: 10px;
+        }
+
+        #death-reason {
+            font-size: 18px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        #final-score {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            color: #ffff00;
+            margin-bottom: 20px;
+        }
+
+        #restart-icon {
+            width: 60px; height: 60px;
+            cursor: pointer;
+            pointer-events: auto;
+            background: linear-gradient(135deg, #ff1493, #00bfff);
+            border: none;
+            padding: 14px;
+            border-radius: 50%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 191, 255, 0.5);
+        }
+
+        #restart-icon:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 6px 30px rgba(255, 20, 147, 0.7);
+        }
+
+        #restart-icon svg { fill: #fff; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui-layer">
+            <div class="score-container">
+                <span id="hi-score">HI 00000</span>
+                <span id="current-score">00000</span>
+            </div>
+            <div id="start-screen">
+                <div id="start-text">PRESS SPACE TO START</div>
+            </div>
+            <div id="game-over-screen">
+                <div id="game-over-text">GAME OVER</div>
+                <div id="death-reason"></div>
+                <div id="final-score"></div>
+                <button id="restart-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('current-score');
+const hiScoreEl = document.getElementById('hi-score');
+const gameOverScreen = document.getElementById('game-over-screen');
+const startScreen = document.getElementById('start-screen');
+const restartBtn = document.getElementById('restart-icon');
+const finalScoreEl = document.getElementById('final-score');
+const deathReasonEl = document.getElementById('death-reason');
+
+// Audio
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+
+    const sounds = {
+        jump: () => { osc.type = 'square'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(500, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1); osc.start(now); osc.stop(now + 0.1); },
+        doubleJump: () => { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.08); gain.gain.setValueAtTime(0.08, now); gain.gain.linearRampToValueAtTime(0, now + 0.08); osc.start(now); osc.stop(now + 0.08); },
+        score: () => { osc.type = 'square'; osc.frequency.setValueAtTime(520, now); osc.frequency.setValueAtTime(660, now + 0.05); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); },
+        die: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.4); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0, now + 0.4); osc.start(now); osc.stop(now + 0.4); },
+        goblin: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.setValueAtTime(200, now + 0.1); gain.gain.setValueAtTime(0.08, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); },
+        electric: () => { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(1000, now); osc.frequency.setValueAtTime(300, now + 0.05); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+    };
+    if (sounds[type]) sounds[type]();
+}
+
+// Constants
+const GRAVITY = 0.6;
+const JUMP_STRENGTH = -12;
+const DOUBLE_JUMP_STRENGTH = -10;
+
+// Dialogue
+const VENOM_PHRASES = ['WE ARE VENOM!', 'HUNGRY!', 'OURS!', 'LETHAL!', 'TEETH!', 'CHOMP!'];
+const GOBLIN_PHRASES = ['HAHAHA!', 'CATCH!', 'SURPRISE!', 'BOOM!', 'TOO SLOW!'];
+const randomPhrase = arr => arr[Math.floor(Math.random() * arr.length)];
+
+// Game state
+let gameSpeed = 5, score = 0, highScore = localStorage.getItem('symbioteScore') || 0;
+let frame = 0, isGameOver = false, isPlaying = false;
+let obstacles = [], comicTexts = [], buildings = [], goblin = null, pumpkinBombs = [], electroBolts = [], clouds = [];
+let scaleRatio = 1, logicalWidth = 600;
+const GAME_HEIGHT = 400;
+let glitchTimer = 0, glitchActive = false;
+let inkSplatters = [], speedLines = [], afterImages = [];
+
+// Spider-Verse color palette
+const SPIDERVERSE = {
+    pink: '#ff1493',
+    cyan: '#00bfff',
+    yellow: '#ffff00',
+    purple: '#9400d3',
+    orange: '#ff6600',
+    black: '#0a0a0a',
+    white: '#ffffff'
+};
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    scaleRatio = canvas.height / GAME_HEIGHT;
+    logicalWidth = canvas.width / scaleRatio;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// === COMIC BOOK EFFECTS ===
+
+class InkSplatter {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color || SPIDERVERSE.pink;
+        this.life = 40;
+        this.scale = 0;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.drops = [];
+        for (let i = 0; i < 5 + Math.random() * 5; i++) {
+            this.drops.push({
+                angle: Math.random() * Math.PI * 2,
+                dist: 5 + Math.random() * 15,
+                size: 2 + Math.random() * 4
+            });
+        }
+    }
+
+    update() {
+        this.life--;
+        if (this.life > 30) this.scale = Math.min(1, this.scale + 0.15);
+        else this.scale *= 0.95;
+        return this.life <= 0;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.rotate(this.rotation);
+        ctx.scale(this.scale * scaleRatio, this.scale * scaleRatio);
+        ctx.fillStyle = this.color;
+
+        // Main splat
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Drops
+        this.drops.forEach(d => {
+            ctx.beginPath();
+            ctx.arc(
+                Math.cos(d.angle) * d.dist,
+                Math.sin(d.angle) * d.dist,
+                d.size,
+                0, Math.PI * 2
+            );
+            ctx.fill();
+        });
+
+        ctx.restore();
+    }
+}
+
+class SpeedLine {
+    constructor(y) {
+        this.x = 150;
+        this.y = y;
+        this.length = 50 + Math.random() * 100;
+        this.life = 8;
+        this.color = Math.random() > 0.5 ? SPIDERVERSE.cyan : SPIDERVERSE.pink;
+    }
+
+    update() {
+        this.life--;
+        this.x -= gameSpeed * 2;
+        return this.life <= 0;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life / 8;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2 * scaleRatio;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.lineTo((this.x - this.length) * scaleRatio, this.y * scaleRatio);
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+class AfterImage {
+    constructor(x, y, w, h) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.life = 6;
+        this.color = SPIDERVERSE.cyan;
+    }
+
+    update() {
+        this.life--;
+        return this.life <= 0;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.life / 12;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(
+            (this.x + this.w/2) * scaleRatio,
+            (this.y + this.h/2) * scaleRatio,
+            this.w/2 * scaleRatio,
+            this.h/2 * scaleRatio,
+            0, 0, Math.PI * 2
+        );
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// Onomatopoeia for actions
+const ONOMATOPOEIA = {
+    jump: ['THWIP!', 'WHOOSH!', 'HUP!'],
+    land: ['THUD!', 'STOMP!'],
+    hit: ['CRASH!', 'WHAM!', 'POW!', 'SPLAT!'],
+    electric: ['ZZZAP!', 'CRACKLE!', 'BZZT!'],
+    bomb: ['KABOOM!', 'BOOM!', 'BLAM!']
+};
+
+// === SMOOTH VECTOR VENOM ===
+class Venom {
+    constructor() {
+        this.x = 80;
+        this.y = GAME_HEIGHT - 100;
+        this.w = 50;
+        this.h = 70;
+        this.vy = 0;
+        this.isJumping = false;
+        this.canDoubleJump = true;
+        this.isDucking = false;
+        this.runFrame = 0;
+        this.animTimer = 0;
+        this.tongueWave = 0;
+    }
+
+    update(inputs) {
+        const groundY = GAME_HEIGHT - 50;
+
+        if (inputs.jump && inputs.jumpPressed) {
+            if (!this.isJumping) {
+                this.vy = JUMP_STRENGTH;
+                this.isJumping = true;
+                this.canDoubleJump = true;
+                playSound('jump');
+                comicTexts.push(new ComicText(randomPhrase(VENOM_PHRASES), this.x + 60, this.y));
+            } else if (this.canDoubleJump) {
+                this.vy = DOUBLE_JUMP_STRENGTH;
+                this.canDoubleJump = false;
+                playSound('doubleJump');
+            }
+            inputs.jumpPressed = false;
+        }
+
+        this.isDucking = inputs.duck && !this.isJumping;
+        this.h = this.isDucking ? 40 : 70;
+
+        if (this.isJumping && inputs.duck) this.vy += GRAVITY * 2;
+
+        this.y += this.vy;
+        this.vy += GRAVITY;
+
+        const wasJumping = this.isJumping;
+        if (this.y + this.h >= groundY) {
+            this.y = groundY - this.h;
+            this.vy = 0;
+            this.isJumping = false;
+            this.canDoubleJump = true;
+            // Land effect
+            if (wasJumping && isPlaying) {
+                inkSplatters.push(new InkSplatter(this.x + 25, groundY, SPIDERVERSE.cyan));
+            }
+        }
+
+        this.animTimer++;
+        if (this.animTimer > 5) {
+            this.runFrame = (this.runFrame + 1) % 4;
+            this.animTimer = 0;
+        }
+        this.tongueWave += 0.15;
+
+        // Generate speed lines and afterimages
+        if (isPlaying && frame % 3 === 0) {
+            speedLines.push(new SpeedLine(this.y + Math.random() * this.h));
+        }
+        if (isPlaying && frame % 4 === 0) {
+            afterImages.push(new AfterImage(this.x - 10, this.y, this.w, this.h));
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Comic book thick outline
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+
+        const tw = Math.sin(this.tongueWave) * 5;
+
+        if (this.isDucking) {
+            // Ducking pose - flattened
+            // Body
+            const bodyGrad = ctx.createLinearGradient(0, 10, 0, 40);
+            bodyGrad.addColorStop(0, '#1a1a2e');
+            bodyGrad.addColorStop(1, '#0a0a0a');
+            ctx.fillStyle = bodyGrad;
+            ctx.beginPath();
+            ctx.ellipse(35, 25, 40, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Head
+            ctx.fillStyle = '#0a0a0a';
+            ctx.beginPath();
+            ctx.ellipse(60, 15, 18, 14, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Eyes
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(58, 10, 8, 5, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(68, 12, 6, 4, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+        } else {
+            // Standing pose
+            const legAnim = Math.sin(this.runFrame * Math.PI / 2) * 8;
+
+            // Tendrils (background)
+            ctx.strokeStyle = '#1a1a2e';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(25, 30);
+                ctx.quadraticCurveTo(
+                    -10 + Math.sin(this.tongueWave + i) * 8,
+                    40 + i * 10,
+                    -5 + Math.sin(this.tongueWave + i * 0.5) * 6,
+                    60 + i * 8
+                );
+                ctx.stroke();
+            }
+
+            // Legs
+            ctx.fillStyle = '#0a0a0a';
+            // Left leg
+            ctx.beginPath();
+            ctx.ellipse(18, 58 + (this.isJumping ? 0 : legAnim), 8, 14, -0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // Right leg
+            ctx.beginPath();
+            ctx.ellipse(35, 58 + (this.isJumping ? 0 : -legAnim), 8, 14, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Body
+            const bodyGrad = ctx.createRadialGradient(25, 35, 5, 25, 35, 30);
+            bodyGrad.addColorStop(0, '#2a2a44');
+            bodyGrad.addColorStop(1, '#0a0a0a');
+            ctx.fillStyle = bodyGrad;
+            ctx.beginPath();
+            ctx.ellipse(25, 35, 22, 28, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Spider symbol
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(25, 32, 6, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Spider legs
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < 4; i++) {
+                const angle = (i - 1.5) * 0.4;
+                ctx.beginPath();
+                ctx.moveTo(25, 32);
+                ctx.lineTo(25 + Math.cos(angle - 0.5) * 15, 32 + Math.sin(angle - 0.5) * 8);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(25, 32);
+                ctx.lineTo(25 + Math.cos(angle + 2.6) * 15, 32 + Math.sin(angle + 2.6) * 8);
+                ctx.stroke();
+            }
+
+            // Arms
+            ctx.fillStyle = '#0a0a0a';
+            const armSwing = this.isJumping ? 0 : Math.sin(this.runFrame * Math.PI / 2) * 0.3;
+            // Left arm
+            ctx.beginPath();
+            ctx.ellipse(8, 30, 6, 12, -0.5 - armSwing, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // Right arm
+            ctx.beginPath();
+            ctx.ellipse(42, 30, 6, 12, 0.5 + armSwing, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Head
+            const headGrad = ctx.createRadialGradient(30, 8, 2, 30, 8, 18);
+            headGrad.addColorStop(0, '#1a1a2e');
+            headGrad.addColorStop(1, '#0a0a0a');
+            ctx.fillStyle = headGrad;
+            ctx.beginPath();
+            ctx.ellipse(30, 8, 18, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Eyes (large, angular)
+            ctx.fillStyle = '#fff';
+            // Left eye
+            ctx.beginPath();
+            ctx.moveTo(18, 2);
+            ctx.quadraticCurveTo(12, 8, 18, 14);
+            ctx.quadraticCurveTo(28, 12, 28, 6);
+            ctx.quadraticCurveTo(24, 0, 18, 2);
+            ctx.fill();
+            // Right eye
+            ctx.beginPath();
+            ctx.moveTo(32, 2);
+            ctx.quadraticCurveTo(36, 0, 42, 4);
+            ctx.quadraticCurveTo(46, 10, 42, 14);
+            ctx.quadraticCurveTo(32, 12, 32, 2);
+            ctx.fill();
+
+            // Mouth
+            ctx.fillStyle = '#1a0a0a';
+            ctx.beginPath();
+            ctx.ellipse(38, 16, 10, 6, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Teeth
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(30 + i * 3, 12);
+                ctx.lineTo(31 + i * 3, 18 + (i % 2) * 2);
+                ctx.lineTo(32 + i * 3, 12);
+                ctx.fill();
+            }
+
+            // Tongue
+            ctx.strokeStyle = '#ff1493';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(44, 16);
+            ctx.quadraticCurveTo(55, 14 + tw, 65, 10 + tw);
+            ctx.stroke();
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(65, 10 + tw);
+            ctx.lineTo(68, 7 + tw);
+            ctx.moveTo(65, 10 + tw);
+            ctx.lineTo(68, 13 + tw);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x + 5, y: this.y + 5, w: this.w - 10, h: this.h - 10 };
+    }
+}
+
+// === SMOOTH GREEN GOBLIN ===
+class GreenGoblin {
+    constructor() {
+        this.x = logicalWidth + 50;
+        this.y = 80 + Math.random() * 60;
+        this.w = 70;
+        this.h = 60;
+        this.speed = gameSpeed * 0.7;
+        this.animFrame = 0;
+        this.hasThrownBomb = false;
+        this.flameAnim = 0;
+    }
+
+    update(venomX) {
+        this.x -= this.speed;
+        this.animFrame += 0.1;
+        this.flameAnim += 0.3;
+
+        if (!this.hasThrownBomb && this.x < venomX + 100) {
+            this.throwBomb(venomX);
+            this.hasThrownBomb = true;
+        }
+
+        return this.x + this.w < -50;
+    }
+
+    throwBomb(targetX) {
+        playSound('goblin');
+        comicTexts.push(new ComicText(randomPhrase(GOBLIN_PHRASES), this.x, this.y - 20));
+        pumpkinBombs.push(new PumpkinBomb(this.x + 35, this.y + 50, targetX));
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Glider
+        const gliderGrad = ctx.createLinearGradient(0, 50, 70, 50);
+        gliderGrad.addColorStop(0, '#4b0082');
+        gliderGrad.addColorStop(0.5, '#6a0dad');
+        gliderGrad.addColorStop(1, '#4b0082');
+        ctx.fillStyle = gliderGrad;
+        ctx.beginPath();
+        ctx.moveTo(5, 52);
+        ctx.quadraticCurveTo(35, 48, 65, 52);
+        ctx.quadraticCurveTo(35, 58, 5, 52);
+        ctx.fill();
+
+        // Flames
+        const flameSize = 8 + Math.sin(this.flameAnim) * 3;
+        const flameGrad = ctx.createRadialGradient(8, 55, 2, 8, 55, flameSize);
+        flameGrad.addColorStop(0, '#fff');
+        flameGrad.addColorStop(0.3, '#ffff00');
+        flameGrad.addColorStop(0.7, '#ff6600');
+        flameGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = flameGrad;
+        ctx.beginPath();
+        ctx.arc(8, 55, flameSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(62, 55, flameSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body
+        const bodyGrad = ctx.createRadialGradient(35, 30, 5, 35, 30, 25);
+        bodyGrad.addColorStop(0, '#32cd32');
+        bodyGrad.addColorStop(1, '#228b22');
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.ellipse(35, 30, 18, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Arms
+        ctx.fillStyle = '#228b22';
+        ctx.beginPath();
+        ctx.ellipse(15, 28, 6, 10, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(55, 28, 6, 10, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Gloves
+        ctx.fillStyle = '#4b0082';
+        ctx.beginPath();
+        ctx.arc(12, 36, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(58, 36, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        const headGrad = ctx.createRadialGradient(35, 8, 3, 35, 8, 15);
+        headGrad.addColorStop(0, '#32cd32');
+        headGrad.addColorStop(1, '#228b22');
+        ctx.fillStyle = headGrad;
+        ctx.beginPath();
+        ctx.ellipse(35, 8, 15, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Horns
+        ctx.fillStyle = '#4b0082';
+        ctx.beginPath();
+        ctx.moveTo(22, 2);
+        ctx.quadraticCurveTo(18, -8, 24, -6);
+        ctx.quadraticCurveTo(26, 0, 22, 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(48, 2);
+        ctx.quadraticCurveTo(52, -8, 46, -6);
+        ctx.quadraticCurveTo(44, 0, 48, 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.ellipse(28, 6, 5, 4, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(42, 6, 5, 4, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Pupils
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(29, 6, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(41, 6, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Grin
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(35, 12, 8, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x + 10, y: this.y, w: this.w - 20, h: this.h };
+    }
+}
+
+// === PUMPKIN BOMB ===
+class PumpkinBomb {
+    constructor(x, y, targetX) {
+        this.x = x;
+        this.y = y;
+        this.vx = (targetX - x) * 0.012;
+        this.vy = -4;
+        this.rotation = 0;
+        this.glowAnim = 0;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.2;
+        this.rotation += 0.1;
+        this.glowAnim += 0.2;
+        return this.y > GAME_HEIGHT + 50;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate((this.x) * scaleRatio, (this.y) * scaleRatio);
+        ctx.rotate(this.rotation);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Glow
+        const glow = 12 + Math.sin(this.glowAnim) * 4;
+        const glowGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, glow);
+        glowGrad.addColorStop(0, 'rgba(0, 255, 0, 0.6)');
+        glowGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, glow, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pumpkin
+        const pumpGrad = ctx.createRadialGradient(-2, -2, 2, 0, 0, 10);
+        pumpGrad.addColorStop(0, '#ff9933');
+        pumpGrad.addColorStop(1, '#cc5500');
+        ctx.fillStyle = pumpGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Face
+        ctx.fillStyle = '#00ff00';
+        // Eyes
+        ctx.beginPath();
+        ctx.moveTo(-5, -3);
+        ctx.lineTo(-3, -6);
+        ctx.lineTo(-1, -3);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(5, -3);
+        ctx.lineTo(3, -6);
+        ctx.lineTo(1, -3);
+        ctx.fill();
+        // Mouth
+        ctx.beginPath();
+        ctx.arc(0, 2, 5, 0, Math.PI);
+        ctx.fill();
+
+        // Stem
+        ctx.fillStyle = '#228b22';
+        ctx.fillRect(-2, -13, 4, 4);
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x - 8, y: this.y - 8, w: 16, h: 16 };
+    }
+}
+
+// === NYC OBSTACLES ===
+
+class TaxiCab {
+    constructor() {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 80;
+        this.w = 60;
+        this.h = 30;
+        this.wheelAnim = 0;
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.x -= gameSpeed;
+        this.wheelAnim += gameSpeed * 0.3;
+        if (this.x + this.w < -50) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Body
+        const bodyGrad = ctx.createLinearGradient(0, 0, 0, 25);
+        bodyGrad.addColorStop(0, '#ffea00');
+        bodyGrad.addColorStop(1, '#e6c200');
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.roundRect(0, 10, 60, 18, 3);
+        ctx.fill();
+
+        // Cabin
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.roundRect(15, 2, 25, 12, [4, 4, 0, 0]);
+        ctx.fill();
+
+        // Windows
+        ctx.fillStyle = '#87ceeb';
+        ctx.fillRect(18, 4, 8, 8);
+        ctx.fillRect(29, 4, 8, 8);
+
+        // Taxi sign
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.roundRect(22, 0, 12, 4, 2);
+        ctx.fill();
+
+        // Wheels
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(12, 28, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(48, 28, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hubcaps
+        ctx.fillStyle = '#888';
+        ctx.beginPath();
+        ctx.arc(12, 28, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(48, 28, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Lights
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(57, 18, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(3, 18, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y + 5, w: this.w, h: this.h - 5 };
+    }
+}
+
+class FireHydrant {
+    constructor() {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 70;
+        this.w = 16;
+        this.h = 22;
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.x -= gameSpeed;
+        if (this.x + this.w < -50) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Body
+        const grad = ctx.createLinearGradient(0, 0, 16, 0);
+        grad.addColorStop(0, '#cc0000');
+        grad.addColorStop(0.5, '#ff3333');
+        grad.addColorStop(1, '#cc0000');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(3, 4, 10, 16, 2);
+        ctx.fill();
+
+        // Top
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.roundRect(1, 0, 14, 6, [3, 3, 0, 0]);
+        ctx.fill();
+
+        // Nozzles
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath();
+        ctx.roundRect(-2, 8, 6, 5, 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(12, 8, 6, 5, 2);
+        ctx.fill();
+
+        // Caps
+        ctx.fillStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.arc(-1, 10, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(17, 10, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y, w: this.w, h: this.h };
+    }
+}
+
+class Dumpster {
+    constructor() {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 85;
+        this.w = 50;
+        this.h = 35;
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.x -= gameSpeed;
+        if (this.x + this.w < -50) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Body
+        const grad = ctx.createLinearGradient(0, 5, 0, 35);
+        grad.addColorStop(0, '#3cb371');
+        grad.addColorStop(1, '#2e8b57');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(2, 8, 46, 27, 2);
+        ctx.fill();
+
+        // Lid
+        ctx.fillStyle = '#45da45';
+        ctx.beginPath();
+        ctx.roundRect(0, 2, 50, 8, [3, 3, 0, 0]);
+        ctx.fill();
+
+        // Wheels
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(8, 35, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(42, 35, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y + 5, w: this.w, h: this.h - 5 };
+    }
+}
+
+class ConstructionBarrier {
+    constructor() {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 75;
+        this.w = 40;
+        this.h = 28;
+        this.lightAnim = 0;
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.x -= gameSpeed;
+        this.lightAnim += 0.15;
+        if (this.x + this.w < -50) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Legs
+        ctx.fillStyle = '#ff6600';
+        ctx.fillRect(4, 20, 4, 8);
+        ctx.fillRect(32, 20, 4, 8);
+
+        // Board
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.roundRect(0, 6, 40, 16, 2);
+        ctx.fill();
+
+        // Stripes
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 6, 8, 16);
+        ctx.fillRect(16, 6, 8, 16);
+        ctx.fillRect(32, 6, 8, 16);
+
+        // Light
+        const lightOn = Math.sin(this.lightAnim * 4) > 0;
+        ctx.fillStyle = lightOn ? '#ffff00' : '#aa8800';
+        ctx.beginPath();
+        ctx.arc(20, 3, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (lightOn) {
+            const glowGrad = ctx.createRadialGradient(20, 3, 2, 20, 3, 10);
+            glowGrad.addColorStop(0, 'rgba(255, 255, 0, 0.5)');
+            glowGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(20, 3, 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y + 6, w: this.w, h: this.h - 6 };
+    }
+}
+
+// === STORM CLOUD ===
+class StormCloud {
+    constructor(x) {
+        this.x = x !== undefined ? x : logicalWidth + 100;
+        this.y = 30 + Math.random() * 40;
+        this.w = 80 + Math.random() * 40;
+        this.h = 35 + Math.random() * 15;
+        this.speed = gameSpeed * 0.15;
+        this.pulseAnim = Math.random() * Math.PI * 2;
+        this.hasLightning = false;
+        this.lightningCooldown = 0;
+    }
+
+    update() {
+        this.x -= this.speed;
+        this.pulseAnim += 0.05;
+        if (this.lightningCooldown > 0) this.lightningCooldown--;
+        return this.x + this.w < -50;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        const pulse = Math.sin(this.pulseAnim) * 0.1;
+
+        // Cloud shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(this.w * 0.5 + 5, this.h * 0.6 + 5, this.w * 0.45, this.h * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Main cloud body - dark storm cloud
+        const cloudGrad = ctx.createRadialGradient(this.w * 0.5, this.h * 0.4, 5, this.w * 0.5, this.h * 0.4, this.w * 0.5);
+        cloudGrad.addColorStop(0, '#4a4a6a');
+        cloudGrad.addColorStop(0.5, '#3a3a5a');
+        cloudGrad.addColorStop(1, '#2a2a4a');
+        ctx.fillStyle = cloudGrad;
+
+        // Multiple ellipses for fluffy cloud shape
+        ctx.beginPath();
+        ctx.ellipse(this.w * 0.3, this.h * 0.5, this.w * 0.25 * (1 + pulse), this.h * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(this.w * 0.5, this.h * 0.35, this.w * 0.3 * (1 + pulse), this.h * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(this.w * 0.7, this.h * 0.5, this.w * 0.25 * (1 + pulse), this.h * 0.38, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner glow when charged
+        if (this.hasLightning) {
+            const innerGlow = ctx.createRadialGradient(this.w * 0.5, this.h * 0.6, 5, this.w * 0.5, this.h * 0.6, 30);
+            innerGlow.addColorStop(0, 'rgba(0, 191, 255, 0.6)');
+            innerGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = innerGlow;
+            ctx.beginPath();
+            ctx.ellipse(this.w * 0.5, this.h * 0.6, 30, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    spawnLightning() {
+        if (this.lightningCooldown <= 0) {
+            this.hasLightning = true;
+            this.lightningCooldown = 200;
+            setTimeout(() => this.hasLightning = false, 500);
+            return new ElectroBolt(this.x + this.w * 0.5, this.y + this.h);
+        }
+        return null;
+    }
+}
+
+// === ELECTRO LIGHTNING (from clouds) ===
+class ElectroBolt {
+    constructor(cloudX, cloudY) {
+        this.x = cloudX - 20;
+        this.y = cloudY;
+        this.w = 40;
+        this.h = GAME_HEIGHT - cloudY - 60;
+        this.flickerAnim = 0;
+        this.markedForDeletion = false;
+        this.life = 60;
+        this.generateBolt();
+    }
+
+    generateBolt() {
+        this.points = [{x: 20, y: 0}];
+        let y = 0;
+        const targetY = this.h;
+        while (y < targetY) {
+            y += 12 + Math.random() * 10;
+            this.points.push({
+                x: 10 + Math.random() * 20,
+                y: Math.min(y, targetY)
+            });
+        }
+        // Branches
+        this.branches = [];
+        for (let i = 1; i < this.points.length - 1; i++) {
+            if (Math.random() < 0.4) {
+                const branchPoints = [this.points[i]];
+                let bx = this.points[i].x;
+                let by = this.points[i].y;
+                const dir = Math.random() > 0.5 ? 1 : -1;
+                for (let j = 0; j < 3; j++) {
+                    bx += dir * (8 + Math.random() * 8);
+                    by += 8 + Math.random() * 6;
+                    branchPoints.push({x: bx, y: by});
+                }
+                this.branches.push(branchPoints);
+            }
+        }
+    }
+
+    update() {
+        this.x -= gameSpeed * 0.15;
+        this.flickerAnim += 0.5;
+        this.life--;
+        if (Math.random() < 0.15) this.generateBolt();
+        if (this.life <= 0) this.markedForDeletion = true;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        const flash = Math.sin(this.flickerAnim * 8) > 0;
+        const alpha = this.life / 60;
+
+        // Outer glow
+        ctx.shadowColor = '#00bfff';
+        ctx.shadowBlur = 20;
+
+        // Main bolt
+        ctx.strokeStyle = flash ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 191, 255, ${alpha})`;
+        ctx.lineWidth = flash ? 5 : 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+        ctx.stroke();
+
+        // Branches
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = `rgba(0, 191, 255, ${alpha * 0.7})`;
+        this.branches.forEach(branch => {
+            ctx.beginPath();
+            ctx.moveTo(branch[0].x, branch[0].y);
+            for (let i = 1; i < branch.length; i++) {
+                ctx.lineTo(branch[i].x, branch[i].y);
+            }
+            ctx.stroke();
+        });
+
+        // Inner core
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < this.points.length; i++) {
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+        ctx.stroke();
+
+        // Impact sparks at bottom
+        if (flash && this.life > 30) {
+            ctx.fillStyle = '#00ffff';
+            const lastPoint = this.points[this.points.length - 1];
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.random() * Math.PI;
+                const dist = 5 + Math.random() * 15;
+                ctx.beginPath();
+                ctx.arc(
+                    lastPoint.x + Math.cos(angle) * dist,
+                    lastPoint.y + Math.sin(angle) * dist * 0.5,
+                    1 + Math.random() * 2,
+                    0, Math.PI * 2
+                );
+                ctx.fill();
+            }
+        }
+
+        ctx.restore();
+    }
+
+    getBounds() {
+        const lastPoint = this.points[this.points.length - 1];
+        return { x: this.x + lastPoint.x - 15, y: this.y + lastPoint.y - 20, w: 30, h: 25 };
+    }
+}
+
+// === COMIC TEXT ===
+class ComicText {
+    constructor(text, x, y, color) {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.life = 35;
+        this.scale = 0;
+        this.rotation = (Math.random() - 0.5) * 0.3;
+        this.color = color || (Math.random() > 0.5 ? SPIDERVERSE.yellow : SPIDERVERSE.white);
+    }
+
+    update() {
+        this.life--;
+        if (this.life > 25) this.scale = Math.min(1.2, this.scale + 0.2);
+        else if (this.life > 15) this.scale = 1;
+        else this.scale *= 0.88;
+        this.y -= 1.5;
+    }
+
+    draw(ctx) {
+        if (this.life <= 0) return;
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.rotate(this.rotation);
+        ctx.scale(this.scale * scaleRatio * 0.5, this.scale * scaleRatio * 0.5);
+
+        // Comic book style - multiple outlines for bold effect
+        ctx.font = 'bold 42px Bangers';
+        ctx.textAlign = 'center';
+
+        // Outer glow
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+
+        // Multiple outlines for thick comic effect
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 8;
+        ctx.strokeText(this.text, 0, 0);
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = SPIDERVERSE.pink;
+        ctx.strokeText(this.text, 2, 2);
+
+        // Fill
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.text, 0, 0);
+
+        // Inner highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillText(this.text, -1, -1);
+
+        ctx.restore();
+    }
+}
+
+// === BUILDING ===
+class Building {
+    constructor(x) {
+        this.x = x || logicalWidth + Math.random() * 100;
+        this.w = 50 + Math.random() * 60;
+        this.h = 80 + Math.random() * 120;
+        this.y = GAME_HEIGHT - 50 - this.h;
+        this.windows = [];
+        for (let wy = 10; wy < this.h - 15; wy += 15) {
+            for (let wx = 8; wx < this.w - 8; wx += 12) {
+                this.windows.push({ x: wx, y: wy, lit: Math.random() > 0.4 });
+            }
+        }
+    }
+
+    update() {
+        this.x -= gameSpeed * 0.12;
+        return this.x + this.w < -50;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Building
+        const grad = ctx.createLinearGradient(0, 0, this.w, 0);
+        grad.addColorStop(0, '#2a2a4a');
+        grad.addColorStop(0.1, '#1a1a3a');
+        grad.addColorStop(1, '#1a1a3a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, this.w, this.h);
+
+        // Windows
+        this.windows.forEach(w => {
+            ctx.fillStyle = w.lit ? '#ffff66' : '#0a0a1a';
+            ctx.fillRect(w.x, w.y, 6, 8);
+        });
+
+        ctx.restore();
+    }
+}
+
+// === GAME LOGIC ===
+let venom = new Venom();
+let spawnTimer = 0, goblinTimer = 0, boltTimer = 0;
+const inputs = { jump: false, duck: false, jumpPressed: false };
+
+document.addEventListener('keydown', e => {
+    if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
+        if (!isPlaying && !isGameOver) startGame();
+        else if (isPlaying && !inputs.jump) {
+            inputs.jump = true;
+            inputs.jumpPressed = true;
+        }
+        e.preventDefault();
+    }
+    if (['ArrowDown', 'KeyS'].includes(e.code)) {
+        inputs.duck = true;
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('keyup', e => {
+    if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) inputs.jump = false;
+    if (['ArrowDown', 'KeyS'].includes(e.code)) inputs.duck = false;
+});
+
+canvas.addEventListener('touchstart', e => {
+    if (!isPlaying && !isGameOver) startGame();
+    else if (isPlaying && !inputs.jump) {
+        inputs.jump = true;
+        inputs.jumpPressed = true;
+    }
+    e.preventDefault();
+});
+canvas.addEventListener('touchend', () => { inputs.jump = false; inputs.duck = false; });
+canvas.addEventListener('click', () => { if (!isPlaying && !isGameOver) startGame(); });
+restartBtn.addEventListener('click', resetGame);
+
+function startGame() {
+    isPlaying = true;
+    startScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+    for (let i = 0; i < 5; i++) buildings.push(new Building(i * 120));
+    for (let i = 0; i < 3; i++) clouds.push(new StormCloud(i * 200 + Math.random() * 100));
+    requestAnimationFrame(gameLoop);
+}
+
+function resetGame() {
+    isGameOver = false;
+    isPlaying = true;
+    score = 0;
+    gameSpeed = 5;
+    obstacles = [];
+    comicTexts = [];
+    pumpkinBombs = [];
+    buildings = [];
+    electroBolts = [];
+    clouds = [];
+    inkSplatters = [];
+    speedLines = [];
+    afterImages = [];
+    goblin = null;
+    spawnTimer = goblinTimer = boltTimer = 0;
+    glitchTimer = 0;
+    glitchActive = false;
+    venom = new Venom();
+    startScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+    updateScore();
+    for (let i = 0; i < 5; i++) buildings.push(new Building(i * 120));
+    for (let i = 0; i < 3; i++) clouds.push(new StormCloud(i * 200 + Math.random() * 100));
+    requestAnimationFrame(gameLoop);
+}
+
+function checkCollision(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function updateScore() {
+    scoreEl.innerText = Math.floor(score).toString().padStart(5, '0');
+    hiScoreEl.innerText = `HI ${Math.floor(highScore).toString().padStart(5, '0')}`;
+}
+
+// Spider-Verse effects
+
+// Prominent halftone dot pattern (Ben-Day dots)
+function drawHalftone(ctx) {
+    ctx.save();
+
+    // Magenta dots (shadows)
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = SPIDERVERSE.pink;
+    const dotSize = 3 * scaleRatio;
+    const spacing = 6 * scaleRatio;
+    for (let y = 0; y < canvas.height; y += spacing) {
+        for (let x = (Math.floor(y / spacing) % 2 === 0 ? 0 : spacing / 2); x < canvas.width; x += spacing) {
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Cyan dots (offset layer)
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = SPIDERVERSE.cyan;
+    for (let y = spacing/2; y < canvas.height; y += spacing) {
+        for (let x = (Math.floor(y / spacing) % 2 === 0 ? spacing/4 : spacing * 3/4); x < canvas.width; x += spacing) {
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize / 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    ctx.restore();
+}
+
+// CMYK color misregistration effect
+function drawColorMisregistration(ctx) {
+    const offset = 2 * scaleRatio;
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha = 0.15;
+
+    // Cyan offset left
+    ctx.fillStyle = 'cyan';
+    ctx.fillRect(-offset, -offset/2, canvas.width, canvas.height);
+
+    // Magenta offset right
+    ctx.fillStyle = 'magenta';
+    ctx.fillRect(offset, offset/2, canvas.width, canvas.height);
+
+    ctx.restore();
+}
+
+// Chromatic aberration (color fringing)
+function drawChromaticAberration(ctx) {
+    const offset = (glitchActive ? 6 : 2) * scaleRatio;
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = glitchActive ? 0.2 : 0.08;
+
+    // Red channel offset
+    ctx.fillStyle = '#ff0040';
+    ctx.fillRect(-offset, 0, canvas.width, canvas.height);
+
+    // Cyan channel offset
+    ctx.fillStyle = '#00ffff';
+    ctx.fillRect(offset, 0, canvas.width, canvas.height);
+
+    ctx.restore();
+}
+
+// Comic panel borders
+function drawPanelBorders(ctx) {
+    const borderWidth = 8 * scaleRatio;
+    ctx.save();
+
+    // Thick black border
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = borderWidth;
+    ctx.strokeRect(borderWidth/2, borderWidth/2, canvas.width - borderWidth, canvas.height - borderWidth);
+
+    // Inner white line
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2 * scaleRatio;
+    ctx.strokeRect(borderWidth + 2, borderWidth + 2, canvas.width - (borderWidth + 4) * 2 + borderWidth, canvas.height - (borderWidth + 4) * 2 + borderWidth);
+
+    // Corner accents
+    const cornerSize = 20 * scaleRatio;
+    ctx.fillStyle = SPIDERVERSE.pink;
+    // Top left
+    ctx.fillRect(0, 0, cornerSize, borderWidth);
+    ctx.fillRect(0, 0, borderWidth, cornerSize);
+    // Top right
+    ctx.fillRect(canvas.width - cornerSize, 0, cornerSize, borderWidth);
+    ctx.fillRect(canvas.width - borderWidth, 0, borderWidth, cornerSize);
+    // Bottom left
+    ctx.fillRect(0, canvas.height - borderWidth, cornerSize, borderWidth);
+    ctx.fillRect(0, canvas.height - cornerSize, borderWidth, cornerSize);
+    // Bottom right
+    ctx.fillRect(canvas.width - cornerSize, canvas.height - borderWidth, cornerSize, borderWidth);
+    ctx.fillRect(canvas.width - borderWidth, canvas.height - cornerSize, borderWidth, cornerSize);
+
+    ctx.restore();
+}
+
+// Action lines radiating from center
+function drawActionLines(ctx) {
+    if (!isPlaying) return;
+    ctx.save();
+    ctx.globalAlpha = 0.03;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1 * scaleRatio;
+
+    const centerX = canvas.width * 0.3;
+    const centerY = canvas.height * 0.5;
+
+    for (let i = 0; i < 30; i++) {
+        const angle = (i / 30) * Math.PI * 2;
+        const innerRadius = 100 * scaleRatio;
+        const outerRadius = Math.max(canvas.width, canvas.height);
+
+        ctx.beginPath();
+        ctx.moveTo(
+            centerX + Math.cos(angle) * innerRadius,
+            centerY + Math.sin(angle) * innerRadius
+        );
+        ctx.lineTo(
+            centerX + Math.cos(angle) * outerRadius,
+            centerY + Math.sin(angle) * outerRadius
+        );
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawSpiderVerseOverlay(ctx) {
+    // Vignette
+    const vignette = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.height * 0.2,
+        canvas.width / 2, canvas.height / 2, canvas.height * 0.9
+    );
+    vignette.addColorStop(0, 'transparent');
+    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Scan lines (more visible)
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#000';
+    for (let y = 0; y < canvas.height; y += 3) {
+        ctx.fillRect(0, y, canvas.width, 1);
+    }
+    ctx.restore();
+
+    // Color bleed edges (more saturated)
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    const edgeGrad = ctx.createLinearGradient(0, 0, canvas.width * 0.15, 0);
+    edgeGrad.addColorStop(0, SPIDERVERSE.pink);
+    edgeGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = edgeGrad;
+    ctx.fillRect(0, 0, canvas.width * 0.15, canvas.height);
+
+    const edgeGrad2 = ctx.createLinearGradient(canvas.width, 0, canvas.width * 0.85, 0);
+    edgeGrad2.addColorStop(0, SPIDERVERSE.cyan);
+    edgeGrad2.addColorStop(1, 'transparent');
+    ctx.fillStyle = edgeGrad2;
+    ctx.fillRect(canvas.width * 0.85, 0, canvas.width * 0.15, canvas.height);
+    ctx.restore();
+
+    // Random ink drips at top
+    ctx.save();
+    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = '#000';
+    for (let i = 0; i < 5; i++) {
+        const x = (i * 200 + 50) * scaleRatio;
+        const h = (20 + Math.sin(frame * 0.01 + i) * 10) * scaleRatio;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.quadraticCurveTo(x + 5 * scaleRatio, h * 0.7, x + 3 * scaleRatio, h);
+        ctx.quadraticCurveTo(x - 5 * scaleRatio, h * 0.7, x, 0);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+// Glitch/distortion effect
+function drawGlitchEffect(ctx) {
+    if (!glitchActive) return;
+
+    ctx.save();
+    // Slice and offset random horizontal strips
+    const sliceCount = 5;
+    for (let i = 0; i < sliceCount; i++) {
+        const y = Math.random() * canvas.height;
+        const h = 5 + Math.random() * 20;
+        const offset = (Math.random() - 0.5) * 30 * scaleRatio;
+
+        ctx.drawImage(canvas, 0, y, canvas.width, h, offset, y, canvas.width, h);
+    }
+    ctx.restore();
+}
+
+function gameLoop() {
+    if (!isPlaying) return;
+
+    // Glitch effect timing
+    glitchTimer++;
+    if (glitchTimer > 120 && Math.random() < 0.02) {
+        glitchActive = true;
+        setTimeout(() => glitchActive = false, 50 + Math.random() * 100);
+        glitchTimer = 0;
+    }
+
+    // Clear with gradient sky
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGrad.addColorStop(0, '#0a0a1a');
+    skyGrad.addColorStop(0.3, '#0d0d2b');
+    skyGrad.addColorStop(1, '#1a1a3a');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Clouds (background layer)
+    clouds.forEach(c => c.draw(ctx));
+    clouds = clouds.filter(c => !c.update());
+    if (clouds.length < 4 && Math.random() < 0.01) clouds.push(new StormCloud());
+
+    // Buildings
+    buildings.forEach(b => b.draw(ctx));
+    buildings = buildings.filter(b => !b.update());
+    if (buildings.length < 6 && Math.random() < 0.02) buildings.push(new Building());
+
+    // Ground
+    ctx.fillStyle = '#1a1a3a';
+    ctx.fillRect(0, (GAME_HEIGHT - 50) * scaleRatio, canvas.width, canvas.height);
+    ctx.fillStyle = '#2a2a4a';
+    ctx.fillRect(0, (GAME_HEIGHT - 52) * scaleRatio, canvas.width, 4 * scaleRatio);
+
+    // Road lines
+    ctx.fillStyle = '#ffff00';
+    const lineOffset = (frame * gameSpeed * 2) % 80;
+    for (let x = -lineOffset; x < canvas.width; x += 80) {
+        ctx.fillRect(x, (GAME_HEIGHT - 35) * scaleRatio, 40 * scaleRatio, 3 * scaleRatio);
+    }
+
+    // Update entities
+    venom.update(inputs);
+    obstacles.forEach(o => o.update());
+    obstacles = obstacles.filter(o => !o.markedForDeletion);
+    electroBolts.forEach(b => b.update());
+    electroBolts = electroBolts.filter(b => !b.markedForDeletion);
+    pumpkinBombs = pumpkinBombs.filter(b => !b.update());
+    comicTexts.forEach(t => t.update());
+    comicTexts = comicTexts.filter(t => t.life > 0);
+
+    // Spawn obstacles
+    spawnTimer++;
+    if (spawnTimer > 80 / (gameSpeed / 5)) {
+        const types = [TaxiCab, FireHydrant, Dumpster, ConstructionBarrier];
+        obstacles.push(new types[Math.floor(Math.random() * types.length)]());
+        spawnTimer = 0;
+    }
+
+    // Spawn lightning from clouds
+    boltTimer++;
+    if (boltTimer > 180 && score > 100 && clouds.length > 0) {
+        const cloud = clouds[Math.floor(Math.random() * clouds.length)];
+        if (cloud.x > 100 && cloud.x < logicalWidth - 100) {
+            const bolt = cloud.spawnLightning();
+            if (bolt) {
+                electroBolts.push(bolt);
+                playSound('electric');
+            }
+        }
+        boltTimer = 0;
+    }
+
+    // Spawn goblin
+    goblinTimer++;
+    if (goblinTimer > 400 && !goblin && score > 150) {
+        goblin = new GreenGoblin();
+        goblinTimer = 0;
+    }
+    if (goblin && goblin.update(venom.x)) goblin = null;
+
+    // Update comic effects
+    afterImages = afterImages.filter(a => !a.update());
+    speedLines = speedLines.filter(s => !s.update());
+    inkSplatters = inkSplatters.filter(s => !s.update());
+
+    // Draw afterimages first (behind character)
+    afterImages.forEach(a => a.draw(ctx));
+
+    // Draw speed lines
+    speedLines.forEach(s => s.draw(ctx));
+
+    // Draw everything
+    obstacles.forEach(o => o.draw(ctx));
+    electroBolts.forEach(b => b.draw(ctx));
+    pumpkinBombs.forEach(b => b.draw(ctx));
+    if (goblin) goblin.draw(ctx);
+    venom.draw(ctx);
+
+    // Draw ink splatters
+    inkSplatters.forEach(s => s.draw(ctx));
+
+    // Draw comic texts
+    comicTexts.forEach(t => t.draw(ctx));
+
+    // Spider-Verse visual effects (layered for maximum comic feel)
+    drawActionLines(ctx);
+    drawHalftone(ctx);
+    drawColorMisregistration(ctx);
+    drawChromaticAberration(ctx);
+    drawSpiderVerseOverlay(ctx);
+    drawGlitchEffect(ctx);
+    drawPanelBorders(ctx);
+
+    // Collisions
+    const bounds = venom.getBounds();
+    for (let o of obstacles) {
+        if (checkCollision(bounds, o.getBounds())) {
+            const reasons = {
+                TaxiCab: 'Hit by taxi!',
+                FireHydrant: 'Tripped on hydrant!',
+                Dumpster: 'Crashed into dumpster!',
+                ConstructionBarrier: 'Hit barrier!'
+            };
+            // Comic effects on hit
+            const hitText = randomPhrase(ONOMATOPOEIA.hit);
+            comicTexts.push(new ComicText(hitText, venom.x + 30, venom.y));
+            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.pink));
+            inkSplatters.push(new InkSplatter(o.x + o.w/2, o.y + o.h/2, SPIDERVERSE.cyan));
+            gameOver(reasons[o.constructor.name] || 'Crashed!');
+            return;
+        }
+    }
+    for (let b of electroBolts) {
+        if (checkCollision(bounds, b.getBounds())) {
+            const zapText = randomPhrase(ONOMATOPOEIA.electric);
+            comicTexts.push(new ComicText(zapText, b.x + 20, b.y + b.h - 30));
+            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.cyan));
+            gameOver('Electrocuted!');
+            return;
+        }
+    }
+    for (let b of pumpkinBombs) {
+        if (checkCollision(bounds, b.getBounds())) {
+            const boomText = randomPhrase(ONOMATOPOEIA.bomb);
+            comicTexts.push(new ComicText(boomText, b.x, b.y));
+            inkSplatters.push(new InkSplatter(b.x, b.y, SPIDERVERSE.orange));
+            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.pink));
+            gameOver('Pumpkin bomb!');
+            return;
+        }
+    }
+    if (goblin && checkCollision(bounds, goblin.getBounds())) {
+        comicTexts.push(new ComicText('WHAM!', goblin.x + 35, goblin.y + 30));
+        inkSplatters.push(new InkSplatter(goblin.x + 35, goblin.y + 30, SPIDERVERSE.purple));
+        gameOver('Hit by Goblin!');
+        return;
+    }
+
+    // Score
+    score += 0.1;
+    if (Math.floor(score) % 100 === 0 && Math.floor(score) !== Math.floor(score - 0.1)) {
+        playSound('score');
+    }
+    updateScore();
+
+    // Speed up
+    if (gameSpeed < 15) gameSpeed += 0.001;
+
+    frame++;
+    requestAnimationFrame(gameLoop);
+}
+
+function gameOver(reason) {
+    isPlaying = false;
+    isGameOver = true;
+    playSound('die');
+
+    if (score > highScore) {
+        highScore = Math.floor(score);
+        localStorage.setItem('symbioteScore', highScore);
+    }
+    updateScore();
+    deathReasonEl.innerText = reason;
+    finalScoreEl.innerText = `SCORE: ${Math.floor(score).toString().padStart(5, '0')}`;
+    gameOverScreen.style.display = 'block';
+}
+
+// Init
+hiScoreEl.innerText = `HI ${Math.floor(highScore).toString().padStart(5, '0')}`;
+
+// Draw initial screen with full Spider-Verse style
+function drawStartScreen() {
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGrad.addColorStop(0, '#0a0a1a');
+    skyGrad.addColorStop(0.3, '#0d0d2b');
+    skyGrad.addColorStop(1, '#1a1a3a');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Initial clouds
+    for (let i = 0; i < 3; i++) {
+        const cloud = new StormCloud(i * 200 + 50);
+        cloud.draw(ctx);
+    }
+
+    for (let i = 0; i < 5; i++) new Building(i * 120).draw(ctx);
+
+    // Ground
+    ctx.fillStyle = '#1a1a3a';
+    ctx.fillRect(0, (GAME_HEIGHT - 50) * scaleRatio, canvas.width, canvas.height);
+    ctx.fillStyle = '#2a2a4a';
+    ctx.fillRect(0, (GAME_HEIGHT - 52) * scaleRatio, canvas.width, 4 * scaleRatio);
+
+    // Road lines
+    ctx.fillStyle = '#ffff00';
+    for (let x = 0; x < canvas.width; x += 80) {
+        ctx.fillRect(x, (GAME_HEIGHT - 35) * scaleRatio, 40 * scaleRatio, 3 * scaleRatio);
+    }
+
+    venom.draw(ctx);
+
+    // All Spider-Verse effects
+    drawHalftone(ctx);
+    drawColorMisregistration(ctx);
+    drawChromaticAberration(ctx);
+    drawSpiderVerseOverlay(ctx);
+    drawPanelBorders(ctx);
+
+    // Title text in comic style
+    ctx.save();
+    ctx.font = 'bold 60px Bangers';
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 8 * scaleRatio;
+    ctx.strokeText('SYMBIOTE RUSH', canvas.width/2, canvas.height * 0.25);
+    ctx.fillStyle = SPIDERVERSE.pink;
+    ctx.fillText('SYMBIOTE RUSH', canvas.width/2, canvas.height * 0.25);
+
+    // Subtitle
+    ctx.font = 'bold 24px Bangers';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 4 * scaleRatio;
+    ctx.strokeText('SPIDER-VERSE EDITION', canvas.width/2, canvas.height * 0.32);
+    ctx.fillStyle = SPIDERVERSE.cyan;
+    ctx.fillText('SPIDER-VERSE EDITION', canvas.width/2, canvas.height * 0.32);
+    ctx.restore();
+}
+
+drawStartScreen();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "symbiote-rush",
+  "version": "1.0.0",
+  "description": "Symbiote Rush - Spider-Verse Edition: An action-packed endless runner game featuring Venom",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "game",
+    "endless-runner",
+    "venom",
+    "spider-verse",
+    "browser-game",
+    "html5-game"
+  ],
+  "author": "Symbiote Rush",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
