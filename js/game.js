@@ -1,9 +1,12 @@
-// Main game logic
+// Main game logic - Enhanced with performance optimizations
 
-import { GAME_HEIGHT, ONOMATOPOEIA, SPIDERVERSE } from './config.js';
+import {
+    GAME_HEIGHT, ONOMATOPOEIA, SPIDERVERSE, SHAKE_CONFIG, NEAR_MISS_THRESHOLD,
+    getCurrentQuality, getFrameSkip, gameSettings, loadSettings, saveSettings
+} from './config.js';
 import { playSound } from './audio.js';
 import { Venom, GreenGoblin, PumpkinBomb } from './characters.js';
-import { InkSplatter, SpeedLine, AfterImage, ComicText } from './effects.js';
+import { InkSplatter, SpeedLine, AfterImage, ComicText, ExplosionParticle, ScorePopup } from './effects.js';
 import { TaxiCab, FireHydrant, Dumpster, ConstructionBarrier, StormCloud, ElectroBolt, Building } from './obstacles.js';
 import { randomPhrase, checkCollision } from './utils.js';
 import {
@@ -14,11 +17,20 @@ import {
     drawActionLines,
     drawSpiderVerseOverlay,
     drawGlitchEffect,
-    drawStartScreen
+    drawStartScreen,
+    drawNeonGlow,
+    drawDynamicLighting
 } from './visuals.js';
 import { checkGDPRConsent, canSaveScore } from './gdpr.js';
 
-// Canvas and DOM elements
+// Core systems
+import { DeltaTime, ObjectPool, TimerManager, ScreenShake, filterInPlace } from './core/performance.js';
+import { renderCache } from './core/render-cache.js';
+import { gradientCache } from './core/gradient-cache.js';
+
+// ============================================
+// CANVAS AND DOM ELEMENTS
+// ============================================
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('current-score');
@@ -30,61 +42,88 @@ const finalScoreEl = document.getElementById('final-score');
 const deathReasonEl = document.getElementById('death-reason');
 const mobileHint = document.getElementById('mobile-hint');
 
-// Game state
+// ============================================
+// CORE SYSTEMS INITIALIZATION
+// ============================================
+const deltaTime = new DeltaTime();
+const timerManager = new TimerManager();
+const screenShake = new ScreenShake();
+
+// Object pools for effects
+const inkSplatterPool = new ObjectPool(() => new InkSplatter(0, 0), 30, 100);
+const speedLinePool = new ObjectPool(() => new SpeedLine(0, 5), 20, 50);
+const afterImagePool = new ObjectPool(() => new AfterImage(0, 0, 50, 70), 15, 40);
+const comicTextPool = new ObjectPool(() => new ComicText('', 0, 0), 10, 25);
+const explosionPool = new ObjectPool(() => new ExplosionParticle(0, 0), 20, 50);
+const scorePopupPool = new ObjectPool(() => new ScorePopup(0, 0, 0), 10, 20);
+
+// ============================================
+// GAME STATE
+// ============================================
 let gameSpeed = 5;
 let score = 0;
 let highScore = 0;
-// Load high score only if consent given
-if (canSaveScore()) {
-    highScore = localStorage.getItem('symbioteScore') || 0;
-}
-
 let frame = 0;
+let animationFrame = 0;
 let isGameOver = false;
 let isPlaying = false;
+let scaleRatio = 1;
+let logicalWidth = 600;
+
+// Glitch effect state
+let glitchTimer = 0;
+let glitchActive = false;
+let glitchEndTime = 0;
+
+// Entity arrays
 let obstacles = [];
-let comicTexts = [];
 let buildings = [];
 let goblin = null;
 let pumpkinBombs = [];
 let electroBolts = [];
 let clouds = [];
-let scaleRatio = 1;
-let logicalWidth = 600;
-let glitchTimer = 0;
-let glitchActive = false;
-let inkSplatters = [];
-let speedLines = [];
-let afterImages = [];
 
-// Game objects
-let venom = new Venom();
+// Spawn timers
 let spawnTimer = 0;
 let goblinTimer = 0;
 let boltTimer = 0;
+
+// Game objects
+let venom = new Venom();
 const inputs = { jump: false, duck: false, jumpPressed: false };
 
-// Check GDPR on load
+// Near miss tracking
+let lastNearMissTime = 0;
+let nearMissCombo = 0;
+
+// ============================================
+// INITIALIZATION
+// ============================================
+loadSettings();
 checkGDPRConsent();
 
-// Resize handling
+if (canSaveScore()) {
+    highScore = localStorage.getItem('symbioteScore') || 0;
+}
+
+// ============================================
+// RESIZE HANDLING
+// ============================================
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Enforce minimum logical width to prevent zooming in too much on portrait
     const MIN_LOGICAL_WIDTH = 600;
     const widthScale = canvas.width / MIN_LOGICAL_WIDTH;
     const heightScale = canvas.height / GAME_HEIGHT;
-
-    // Use the smaller scale to fit the game
     scaleRatio = Math.min(widthScale, heightScale);
-
-    // If screen is taller than game (portrait), we'll have extra vertical space
-    // We can just draw more sky at the top, so we align to bottom
     logicalWidth = canvas.width / scaleRatio;
 
-    // Show mobile hint if on small screen
+    // Invalidate render caches on resize
+    renderCache.invalidate(canvas.width, canvas.height, scaleRatio);
+    gradientCache.invalidate(canvas.width, canvas.height);
+    gradientCache.buildCommonGradients(ctx, canvas);
+
     if (window.innerWidth < 768 && mobileHint) {
         mobileHint.style.display = 'block';
     }
@@ -93,7 +132,9 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// Input handling
+// ============================================
+// INPUT HANDLING
+// ============================================
 document.addEventListener('keydown', e => {
     if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
         if (!isPlaying && !isGameOver) startGame();
@@ -114,9 +155,11 @@ document.addEventListener('keyup', e => {
     if (['ArrowDown', 'KeyS'].includes(e.code)) inputs.duck = false;
 });
 
-// Improved Touch Handling
+// Touch handling with swipe detection
+let touchStartY = 0;
 canvas.addEventListener('touchstart', e => {
-    e.preventDefault(); // Prevent scrolling/zooming
+    e.preventDefault();
+    touchStartY = e.touches[0].clientY;
     if (!isPlaying && !isGameOver) startGame();
     else if (isPlaying && !inputs.jump) {
         inputs.jump = true;
@@ -124,7 +167,13 @@ canvas.addEventListener('touchstart', e => {
     }
 }, { passive: false });
 
-canvas.addEventListener('touchend', (e) => {
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const deltaY = e.touches[0].clientY - touchStartY;
+    if (deltaY > 30) inputs.duck = true;
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
     e.preventDefault();
     inputs.jump = false;
     inputs.duck = false;
@@ -133,12 +182,73 @@ canvas.addEventListener('touchend', (e) => {
 canvas.addEventListener('click', () => { if (!isPlaying && !isGameOver) startGame(); });
 restartBtn.addEventListener('click', resetGame);
 
+// ============================================
+// SETTINGS UI
+// ============================================
+const settingsBtn = document.getElementById('settings-btn');
+const settingsPanel = document.getElementById('settings-panel');
+const animationStyleSelect = document.getElementById('animation-style');
+const qualitySelect = document.getElementById('quality-setting');
+const soundToggle = document.getElementById('sound-toggle');
+const fpsCounter = document.getElementById('fps-counter');
+
+// Initialize settings UI from saved values
+if (animationStyleSelect) animationStyleSelect.value = gameSettings.animationStyle;
+if (qualitySelect) qualitySelect.value = gameSettings.quality;
+if (soundToggle) soundToggle.checked = gameSettings.soundEnabled;
+
+// Settings button toggle
+if (settingsBtn && settingsPanel) {
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsPanel.classList.toggle('open');
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+            settingsPanel.classList.remove('open');
+        }
+    });
+}
+
+// Animation style change
+if (animationStyleSelect) {
+    animationStyleSelect.addEventListener('change', (e) => {
+        gameSettings.animationStyle = e.target.value;
+        saveSettings();
+    });
+}
+
+// Quality change
+if (qualitySelect) {
+    qualitySelect.addEventListener('change', (e) => {
+        gameSettings.quality = e.target.value;
+        renderCache.setQuality(e.target.value);
+        saveSettings();
+    });
+}
+
+// Sound toggle
+if (soundToggle) {
+    soundToggle.addEventListener('change', (e) => {
+        gameSettings.soundEnabled = e.target.checked;
+        saveSettings();
+    });
+}
+
+// ============================================
+// GAME STATE MANAGEMENT
+// ============================================
 function startGame() {
     isPlaying = true;
     startScreen.style.display = 'none';
     gameOverScreen.style.display = 'none';
+    deltaTime.reset();
+
     for (let i = 0; i < 5; i++) buildings.push(new Building(i * 120, logicalWidth, gameSpeed));
     for (let i = 0; i < 3; i++) clouds.push(new StormCloud(i * 200 + Math.random() * 100, logicalWidth, gameSpeed));
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -147,25 +257,41 @@ function resetGame() {
     isPlaying = true;
     score = 0;
     gameSpeed = 5;
+    frame = 0;
+    animationFrame = 0;
+    glitchTimer = 0;
+    glitchActive = false;
+    nearMissCombo = 0;
+
+    // Clear entity arrays
     obstacles = [];
-    comicTexts = [];
     pumpkinBombs = [];
     buildings = [];
     electroBolts = [];
     clouds = [];
-    inkSplatters = [];
-    speedLines = [];
-    afterImages = [];
     goblin = null;
     spawnTimer = goblinTimer = boltTimer = 0;
-    glitchTimer = 0;
-    glitchActive = false;
+
+    // Clear pools
+    inkSplatterPool.clear();
+    speedLinePool.clear();
+    afterImagePool.clear();
+    comicTextPool.clear();
+    explosionPool.clear();
+    scorePopupPool.clear();
+    timerManager.clear();
+    screenShake.reset();
+
     venom = new Venom();
+    deltaTime.reset();
+
     startScreen.style.display = 'none';
     gameOverScreen.style.display = 'none';
     updateScore();
+
     for (let i = 0; i < 5; i++) buildings.push(new Building(i * 120, logicalWidth, gameSpeed));
     for (let i = 0; i < 3; i++) clouds.push(new StormCloud(i * 200 + Math.random() * 100, logicalWidth, gameSpeed));
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -174,60 +300,103 @@ function updateScore() {
     hiScoreEl.innerText = `HI ${Math.floor(highScore).toString().padStart(5, '0')}`;
 }
 
-function gameLoop() {
+// ============================================
+// MAIN GAME LOOP
+// ============================================
+function gameLoop(timestamp) {
     if (!isPlaying) return;
 
-    // Glitch effect timing
-    glitchTimer++;
+    const dt = deltaTime.update(timestamp);
+    const dtMult = deltaTime.getMultiplier();
+    const quality = getCurrentQuality();
+    const frameSkip = getFrameSkip();
+
+    // Update systems
+    timerManager.update(dt);
+    screenShake.update(dt);
+
+    // Glitch effect timing (frame-based, not setTimeout)
+    glitchTimer += dtMult;
     if (glitchTimer > 120 && Math.random() < 0.02) {
         glitchActive = true;
-        setTimeout(() => glitchActive = false, 50 + Math.random() * 100);
+        glitchEndTime = timestamp + 50 + Math.random() * 100;
         glitchTimer = 0;
     }
-
-    // Clear with gradient sky
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    skyGrad.addColorStop(0, '#0a0a1a');
-    skyGrad.addColorStop(0.3, '#0d0d2b');
-    skyGrad.addColorStop(1, '#1a1a3a');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Clouds (background layer)
-    clouds.forEach(c => c.draw(ctx, scaleRatio));
-    clouds = clouds.filter(c => !c.update());
-    if (clouds.length < 4 && Math.random() < 0.01) clouds.push(new StormCloud(undefined, logicalWidth, gameSpeed));
-
-    // Buildings
-    buildings.forEach(b => b.draw(ctx, scaleRatio));
-    buildings = buildings.filter(b => !b.update());
-    if (buildings.length < 6 && Math.random() < 0.02) buildings.push(new Building(undefined, logicalWidth, gameSpeed));
-
-    // Ground
-    ctx.fillStyle = '#1a1a3a';
-    ctx.fillRect(0, (GAME_HEIGHT - 50) * scaleRatio, canvas.width, canvas.height);
-    ctx.fillStyle = '#2a2a4a';
-    ctx.fillRect(0, (GAME_HEIGHT - 52) * scaleRatio, canvas.width, 4 * scaleRatio);
-
-    // Road lines
-    ctx.fillStyle = '#ffff00';
-    const lineOffset = (frame * gameSpeed * 2) % 80;
-    for (let x = -lineOffset; x < canvas.width; x += 80) {
-        ctx.fillRect(x, (GAME_HEIGHT - 35) * scaleRatio, 40 * scaleRatio, 3 * scaleRatio);
+    if (glitchActive && timestamp > glitchEndTime) {
+        glitchActive = false;
     }
 
-    // Update entities
-    venom.update(inputs, isPlaying, inkSplatters, speedLines, afterImages, comicTexts, gameSpeed, frame);
-    obstacles.forEach(o => o.update());
-    obstacles = obstacles.filter(o => !o.markedForDeletion);
-    electroBolts.forEach(b => b.update());
-    electroBolts = electroBolts.filter(b => !b.markedForDeletion);
-    pumpkinBombs = pumpkinBombs.filter(b => !b.update());
-    comicTexts.forEach(t => t.update());
-    comicTexts = comicTexts.filter(t => t.life > 0);
+    // Animation frame counter for frame-skip effect
+    animationFrame++;
+    const shouldAnimate = animationFrame % frameSkip === 0;
 
-    // Spawn obstacles
-    spawnTimer++;
+    // ============================================
+    // UPDATE PHASE
+    // ============================================
+
+    // Update player
+    venom.update(inputs, isPlaying, dtMult, shouldAnimate, {
+        inkSplatterPool, speedLinePool, afterImagePool, comicTextPool, screenShake
+    }, gameSpeed, frame);
+
+    // Update obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        obstacles[i].update(dtMult);
+        if (obstacles[i].markedForDeletion) {
+            obstacles.splice(i, 1);
+        }
+    }
+
+    // Update electro bolts
+    for (let i = electroBolts.length - 1; i >= 0; i--) {
+        electroBolts[i].update(dtMult);
+        if (electroBolts[i].markedForDeletion) {
+            electroBolts.splice(i, 1);
+        }
+    }
+
+    // Update pumpkin bombs
+    for (let i = pumpkinBombs.length - 1; i >= 0; i--) {
+        if (pumpkinBombs[i].update(dtMult)) {
+            pumpkinBombs.splice(i, 1);
+        }
+    }
+
+    // Update clouds
+    for (let i = clouds.length - 1; i >= 0; i--) {
+        clouds[i].update(dtMult);
+        if (clouds[i].markedForDeletion) {
+            clouds.splice(i, 1);
+        }
+    }
+
+    // Update buildings
+    for (let i = buildings.length - 1; i >= 0; i--) {
+        if (buildings[i].update(dtMult)) {
+            buildings.splice(i, 1);
+        }
+    }
+
+    // Update goblin
+    if (goblin) {
+        if (goblin.update(venom.x, pumpkinBombs, comicTextPool, dtMult)) {
+            goblin = null;
+        }
+    }
+
+    // Update object pools
+    inkSplatterPool.update(dtMult);
+    speedLinePool.update(dtMult);
+    afterImagePool.update(dtMult);
+    comicTextPool.update(dtMult);
+    explosionPool.update(dtMult);
+    scorePopupPool.update(dtMult);
+
+    // ============================================
+    // SPAWNING
+    // ============================================
+
+    spawnTimer += dtMult;
     if (spawnTimer > 80 / (gameSpeed / 5)) {
         const types = [
             () => new TaxiCab(logicalWidth, gameSpeed),
@@ -239,8 +408,7 @@ function gameLoop() {
         spawnTimer = 0;
     }
 
-    // Spawn lightning from clouds
-    boltTimer++;
+    boltTimer += dtMult;
     if (boltTimer > 180 && score > 100 && clouds.length > 0) {
         const cloud = clouds[Math.floor(Math.random() * clouds.length)];
         if (cloud.x > 100 && cloud.x < logicalWidth - 100) {
@@ -253,50 +421,119 @@ function gameLoop() {
         boltTimer = 0;
     }
 
-    // Spawn goblin
-    goblinTimer++;
+    goblinTimer += dtMult;
     if (goblinTimer > 400 && !goblin && score > 150) {
         goblin = new GreenGoblin(logicalWidth, gameSpeed);
         goblinTimer = 0;
     }
-    if (goblin && goblin.update(venom.x, pumpkinBombs, comicTexts)) goblin = null;
 
-    // Update comic effects
-    afterImages = afterImages.filter(a => !a.update());
-    speedLines = speedLines.filter(s => !s.update());
-    inkSplatters = inkSplatters.filter(s => !s.update());
+    if (clouds.length < 4 && Math.random() < 0.01) {
+        clouds.push(new StormCloud(undefined, logicalWidth, gameSpeed));
+    }
+    if (buildings.length < 6 && Math.random() < 0.02) {
+        buildings.push(new Building(undefined, logicalWidth, gameSpeed));
+    }
 
-    // Draw afterimages first (behind character)
-    afterImages.forEach(a => a.draw(ctx, scaleRatio));
+    // ============================================
+    // RENDER PHASE
+    // ============================================
 
-    // Draw speed lines
-    speedLines.forEach(s => s.draw(ctx, scaleRatio));
+    // Clear with gradient sky
+    const skyGrad = gradientCache.getSky(ctx, canvas.height);
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw everything
+    // Apply screen shake
+    ctx.save();
+    screenShake.apply(ctx);
+
+    // Clouds (background layer)
+    clouds.forEach(c => c.draw(ctx, scaleRatio));
+
+    // Buildings
+    buildings.forEach(b => b.draw(ctx, scaleRatio));
+
+    // Dynamic lighting (if enabled)
+    if (quality.dynamicLighting) {
+        drawDynamicLighting(ctx, canvas, scaleRatio, {
+            venomX: venom.x + venom.w / 2,
+            venomY: venom.y + venom.h / 2,
+            gameSpeed,
+            hasGoblin: goblin !== null,
+            lightningActive: electroBolts.some(b => b.life > 30)
+        });
+    }
+
+    // Ground
+    ctx.fillStyle = SPIDERVERSE.bgNear;
+    ctx.fillRect(0, (GAME_HEIGHT - 50) * scaleRatio, canvas.width, canvas.height);
+    ctx.fillStyle = SPIDERVERSE.bgSurface;
+    ctx.fillRect(0, (GAME_HEIGHT - 52) * scaleRatio, canvas.width, 4 * scaleRatio);
+
+    // Road lines
+    ctx.fillStyle = SPIDERVERSE.yellow;
+    const lineOffset = (frame * gameSpeed * 2) % 80;
+    for (let x = -lineOffset; x < canvas.width; x += 80) {
+        ctx.fillRect(x, (GAME_HEIGHT - 35) * scaleRatio, 40 * scaleRatio, 3 * scaleRatio);
+    }
+
+    // After images (behind character)
+    if (quality.afterImages) {
+        afterImagePool.draw(ctx, scaleRatio);
+    }
+
+    // Speed lines
+    if (quality.speedLines) {
+        speedLinePool.draw(ctx, scaleRatio);
+    }
+
+    // Draw entities
     obstacles.forEach(o => o.draw(ctx, scaleRatio));
     electroBolts.forEach(b => b.draw(ctx, scaleRatio));
     pumpkinBombs.forEach(b => b.draw(ctx, scaleRatio));
     if (goblin) goblin.draw(ctx, scaleRatio);
-    venom.draw(ctx, scaleRatio);
+    venom.draw(ctx, scaleRatio, quality.glowEffects);
 
-    // Draw ink splatters
-    inkSplatters.forEach(s => s.draw(ctx, scaleRatio));
+    // Draw effects
+    if (quality.inkSplatters) {
+        inkSplatterPool.draw(ctx, scaleRatio);
+    }
+    explosionPool.draw(ctx, scaleRatio);
+    comicTextPool.draw(ctx, scaleRatio);
+    scorePopupPool.draw(ctx, scaleRatio);
 
-    // Draw comic texts
-    comicTexts.forEach(t => t.draw(ctx, scaleRatio));
+    // Restore before post-processing
+    ctx.restore();
 
-    // Spider-Verse visual effects (layered for maximum comic feel)
-    drawActionLines(ctx, canvas, scaleRatio, isPlaying);
-    drawHalftone(ctx, canvas, scaleRatio);
-    drawColorMisregistration(ctx, canvas, scaleRatio);
-    drawChromaticAberration(ctx, canvas, scaleRatio, glitchActive);
-    drawSpiderVerseOverlay(ctx, canvas, scaleRatio, frame);
+    // ============================================
+    // POST-PROCESSING EFFECTS
+    // ============================================
+
+    if (quality.actionLines) {
+        drawActionLines(ctx, canvas, scaleRatio, isPlaying, renderCache);
+    }
+    if (quality.halftone) {
+        drawHalftone(ctx, canvas, scaleRatio, renderCache);
+    }
+    if (quality.colorMisregistration) {
+        drawColorMisregistration(ctx, canvas, scaleRatio);
+    }
+    if (quality.chromaticAberration) {
+        drawChromaticAberration(ctx, canvas, scaleRatio, glitchActive);
+    }
+    drawSpiderVerseOverlay(ctx, canvas, scaleRatio, frame, renderCache);
     drawGlitchEffect(ctx, canvas, scaleRatio, glitchActive);
     drawPanelBorders(ctx, canvas, scaleRatio);
 
-    // Collisions
+    // ============================================
+    // COLLISION DETECTION
+    // ============================================
     const bounds = venom.getBounds();
+
     for (let o of obstacles) {
+        // Near miss detection
+        checkNearMiss(bounds, o, timestamp);
+
         if (checkCollision(bounds, o.getBounds())) {
             const reasons = {
                 TaxiCab: 'Hit by taxi!',
@@ -304,55 +541,121 @@ function gameLoop() {
                 Dumpster: 'Crashed into dumpster!',
                 ConstructionBarrier: 'Hit barrier!'
             };
-            // Comic effects on hit
-            const hitText = randomPhrase(ONOMATOPOEIA.hit);
-            comicTexts.push(new ComicText(hitText, venom.x + 30, venom.y));
-            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.pink));
-            inkSplatters.push(new InkSplatter(o.x + o.w / 2, o.y + o.h / 2, SPIDERVERSE.cyan));
+            triggerCollisionEffects(o);
             gameOver(reasons[o.constructor.name] || 'Crashed!');
             return;
         }
     }
+
     for (let b of electroBolts) {
         if (checkCollision(bounds, b.getBounds())) {
             const zapText = randomPhrase(ONOMATOPOEIA.electric);
-            comicTexts.push(new ComicText(zapText, b.x + 20, b.y + b.h - 30));
-            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.cyan));
+            comicTextPool.acquire(zapText, b.x + 20, b.y + b.h - 30);
+            triggerExplosion(venom.x + 25, venom.y + 35, SPIDERVERSE.electricBlue);
+            screenShake.shake(SHAKE_CONFIG.explosion.intensity, SHAKE_CONFIG.explosion.duration);
             gameOver('Electrocuted!');
             return;
         }
     }
+
     for (let b of pumpkinBombs) {
         if (checkCollision(bounds, b.getBounds())) {
             const boomText = randomPhrase(ONOMATOPOEIA.bomb);
-            comicTexts.push(new ComicText(boomText, b.x, b.y));
-            inkSplatters.push(new InkSplatter(b.x, b.y, SPIDERVERSE.orange));
-            inkSplatters.push(new InkSplatter(venom.x + 25, venom.y + 35, SPIDERVERSE.pink));
+            comicTextPool.acquire(boomText, b.x, b.y);
+            triggerExplosion(b.x, b.y, SPIDERVERSE.orangeHot);
+            triggerExplosion(venom.x + 25, venom.y + 35, SPIDERVERSE.pink);
+            screenShake.shake(SHAKE_CONFIG.explosion.intensity, SHAKE_CONFIG.explosion.duration);
             gameOver('Pumpkin bomb!');
             return;
         }
     }
+
     if (goblin && checkCollision(bounds, goblin.getBounds())) {
-        comicTexts.push(new ComicText('WHAM!', goblin.x + 35, goblin.y + 30));
-        inkSplatters.push(new InkSplatter(goblin.x + 35, goblin.y + 30, SPIDERVERSE.purple));
+        comicTextPool.acquire('WHAM!', goblin.x + 35, goblin.y + 30);
+        triggerExplosion(goblin.x + 35, goblin.y + 30, SPIDERVERSE.purple);
+        screenShake.shake(SHAKE_CONFIG.collision.intensity, SHAKE_CONFIG.collision.duration);
         gameOver('Hit by Goblin!');
         return;
     }
 
-    // Score
-    score += 0.1;
-    if (Math.floor(score) % 100 === 0 && Math.floor(score) !== Math.floor(score - 0.1)) {
+    // ============================================
+    // SCORE UPDATE
+    // ============================================
+    score += 0.1 * dtMult;
+    if (Math.floor(score) % 100 === 0 && Math.floor(score) !== Math.floor(score - 0.1 * dtMult)) {
         playSound('score');
+        // Score milestone popup
+        scorePopupPool.acquire(venom.x + 50, venom.y - 20, 100, true);
     }
     updateScore();
 
     // Speed up
-    if (gameSpeed < 15) gameSpeed += 0.001;
+    if (gameSpeed < 15) gameSpeed += 0.001 * dtMult;
 
     frame++;
     requestAnimationFrame(gameLoop);
 }
 
+// ============================================
+// COLLISION EFFECTS
+// ============================================
+function triggerCollisionEffects(obstacle) {
+    const hitText = randomPhrase(ONOMATOPOEIA.hit);
+    comicTextPool.acquire(hitText, venom.x + 30, venom.y);
+    triggerExplosion(venom.x + 25, venom.y + 35, SPIDERVERSE.pink);
+    triggerExplosion(obstacle.x + obstacle.w / 2, obstacle.y + obstacle.h / 2, SPIDERVERSE.cyan);
+    screenShake.shake(SHAKE_CONFIG.collision.intensity, SHAKE_CONFIG.collision.duration);
+}
+
+function triggerExplosion(x, y, color) {
+    const particle = explosionPool.acquire(x, y, color, 15);
+}
+
+// ============================================
+// NEAR MISS DETECTION
+// ============================================
+function checkNearMiss(venomBounds, obstacle, timestamp) {
+    const oBounds = obstacle.getBounds();
+
+    // Check if obstacle just passed player (within threshold)
+    const justPassed = oBounds.x + oBounds.w < venomBounds.x &&
+                       oBounds.x + oBounds.w > venomBounds.x - NEAR_MISS_THRESHOLD * 2;
+
+    if (justPassed && !obstacle._nearMissTriggered) {
+        // Check vertical proximity
+        const verticalOverlap = venomBounds.y < oBounds.y + oBounds.h + NEAR_MISS_THRESHOLD &&
+                               venomBounds.y + venomBounds.h > oBounds.y - NEAR_MISS_THRESHOLD;
+
+        if (verticalOverlap) {
+            obstacle._nearMissTriggered = true;
+
+            // Cooldown check
+            if (timestamp - lastNearMissTime > 500) {
+                lastNearMissTime = timestamp;
+                nearMissCombo++;
+
+                // Visual feedback
+                const nearMissText = randomPhrase(ONOMATOPOEIA.nearMiss);
+                comicTextPool.acquire(nearMissText, venom.x + 60, venom.y - 30, SPIDERVERSE.yellow);
+                screenShake.shake(SHAKE_CONFIG.nearMiss.intensity, SHAKE_CONFIG.nearMiss.duration);
+
+                // Bonus score
+                const bonus = 10 * nearMissCombo;
+                score += bonus;
+                scorePopupPool.acquire(venom.x + 40, venom.y - 50, bonus, false);
+            }
+        }
+    }
+
+    // Reset combo if too much time passed
+    if (timestamp - lastNearMissTime > 2000) {
+        nearMissCombo = 0;
+    }
+}
+
+// ============================================
+// GAME OVER
+// ============================================
 function gameOver(reason) {
     isPlaying = false;
     isGameOver = true;
@@ -370,6 +673,8 @@ function gameOver(reason) {
     gameOverScreen.style.display = 'block';
 }
 
-// Init
+// ============================================
+// INITIALIZATION
+// ============================================
 hiScoreEl.innerText = `HI ${Math.floor(highScore).toString().padStart(5, '0')}`;
-drawStartScreen(ctx, canvas, scaleRatio, venom);
+drawStartScreen(ctx, canvas, scaleRatio, venom, renderCache);

@@ -1,6 +1,7 @@
 // Obstacle classes - TaxiCab, FireHydrant, Dumpster, ConstructionBarrier, StormCloud, ElectroBolt, Building
+// Updated with delta-time support and object pooling
 
-import { GAME_HEIGHT } from './config.js';
+import { GAME_HEIGHT, SPIDERVERSE, getCurrentQuality } from './config.js';
 
 export class TaxiCab {
     constructor(logicalWidth, gameSpeed) {
@@ -11,12 +12,26 @@ export class TaxiCab {
         this.wheelAnim = 0;
         this.markedForDeletion = false;
         this.gameSpeed = gameSpeed;
+        this._poolActive = false;
     }
 
-    update() {
-        this.x -= this.gameSpeed;
-        this.wheelAnim += this.gameSpeed * 0.3;
+    reset(logicalWidth, gameSpeed) {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 80;
+        this.wheelAnim = 0;
+        this.markedForDeletion = false;
+        this.gameSpeed = gameSpeed;
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * dtMult;
+        this.wheelAnim += this.gameSpeed * 0.3 * dtMult;
         if (this.x + this.w < -50) this.markedForDeletion = true;
+        return this.markedForDeletion;
     }
 
     draw(ctx, scaleRatio) {
@@ -24,27 +39,27 @@ export class TaxiCab {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
-        // Body
+        // Body gradient
         const bodyGrad = ctx.createLinearGradient(0, 0, 0, 25);
-        bodyGrad.addColorStop(0, '#ffea00');
-        bodyGrad.addColorStop(1, '#e6c200');
+        bodyGrad.addColorStop(0, SPIDERVERSE.yellow);
+        bodyGrad.addColorStop(1, SPIDERVERSE.yellowDark);
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.roundRect(0, 10, 60, 18, 3);
         ctx.fill();
 
         // Cabin
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = SPIDERVERSE.yellowLight;
         ctx.beginPath();
         ctx.roundRect(15, 2, 25, 12, [4, 4, 0, 0]);
         ctx.fill();
 
         // Outline for visibility
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = SPIDERVERSE.white;
         ctx.lineWidth = 2;
 
         // Body
-        ctx.fillStyle = '#ffcc00';
+        ctx.fillStyle = SPIDERVERSE.yellow;
         ctx.beginPath();
         ctx.moveTo(10, 20);
         ctx.lineTo(30, 20);
@@ -55,12 +70,12 @@ export class TaxiCab {
         ctx.stroke();
 
         // Top light
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = SPIDERVERSE.white;
         ctx.fillRect(15, 15, 10, 5);
         ctx.strokeRect(15, 15, 10, 5);
 
         // Checkers
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = SPIDERVERSE.black;
         ctx.fillRect(5, 30, 5, 5);
         ctx.fillRect(15, 30, 5, 5);
         ctx.fillRect(25, 30, 5, 5);
@@ -68,12 +83,27 @@ export class TaxiCab {
         ctx.fillRect(20, 35, 5, 5);
         ctx.fillRect(30, 35, 5, 5);
 
-        // Wheels
-        ctx.fillStyle = '#000';
+        // Wheels with rotation
+        ctx.fillStyle = SPIDERVERSE.black;
         ctx.beginPath();
         ctx.arc(10, 40, 6, 0, Math.PI * 2);
         ctx.arc(30, 40, 6, 0, Math.PI * 2);
         ctx.fill();
+
+        // Wheel spokes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+            const angle = this.wheelAnim + (i * Math.PI / 2);
+            ctx.beginPath();
+            ctx.moveTo(10, 40);
+            ctx.lineTo(10 + Math.cos(angle) * 4, 40 + Math.sin(angle) * 4);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(30, 40);
+            ctx.lineTo(30 + Math.cos(angle) * 4, 40 + Math.sin(angle) * 4);
+            ctx.stroke();
+        }
 
         ctx.restore();
     }
@@ -87,15 +117,28 @@ export class FireHydrant {
     constructor(logicalWidth, gameSpeed) {
         this.w = 30;
         this.h = 40;
-        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.x = logicalWidth + 50;
         this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
+        this.gameSpeed = gameSpeed;
+        this._poolActive = false;
     }
 
-    update() {
-        this.x -= this.gameSpeed;
+    reset(logicalWidth, gameSpeed) {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 50 - this.h;
+        this.markedForDeletion = false;
+        this.gameSpeed = gameSpeed;
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * dtMult;
         if (this.x < -this.w) this.markedForDeletion = true;
+        return this.markedForDeletion;
     }
 
     getBounds() {
@@ -107,16 +150,26 @@ export class FireHydrant {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        const quality = getCurrentQuality();
+
         // Outline
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = SPIDERVERSE.white;
         ctx.lineWidth = 2;
 
+        // Glow effect
+        if (quality.glowEffects) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = SPIDERVERSE.orange;
+        }
+
         // Body
-        ctx.fillStyle = '#ff3333';
+        ctx.fillStyle = SPIDERVERSE.orange;
         ctx.beginPath();
         ctx.rect(5, 10, 20, 30);
         ctx.fill();
         ctx.stroke();
+
+        ctx.shadowBlur = 0;
 
         // Top
         ctx.beginPath();
@@ -138,18 +191,31 @@ export class FireHydrant {
 }
 
 export class Dumpster {
-    constructor(logicalWidth, gameSpeed) { // Adjusted to use logicalWidth
+    constructor(logicalWidth, gameSpeed) {
         this.w = 80;
         this.h = 50;
-        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.x = logicalWidth + 50;
         this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
+        this.gameSpeed = gameSpeed;
+        this._poolActive = false;
     }
 
-    update() {
-        this.x -= this.gameSpeed;
+    reset(logicalWidth, gameSpeed) {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 50 - this.h;
+        this.markedForDeletion = false;
+        this.gameSpeed = gameSpeed;
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * dtMult;
         if (this.x < -this.w) this.markedForDeletion = true;
+        return this.markedForDeletion;
     }
 
     getBounds() {
@@ -162,11 +228,14 @@ export class Dumpster {
         ctx.scale(scaleRatio, scaleRatio);
 
         // Outline
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = SPIDERVERSE.white;
         ctx.lineWidth = 2;
 
-        // Body
-        ctx.fillStyle = '#228b22';
+        // Body - Green with gradient
+        const bodyGrad = ctx.createLinearGradient(0, 10, 80, 50);
+        bodyGrad.addColorStop(0, SPIDERVERSE.symbioteGreen);
+        bodyGrad.addColorStop(1, SPIDERVERSE.symbioteGreenDark);
+        ctx.fillStyle = bodyGrad;
         ctx.beginPath();
         ctx.moveTo(0, 10);
         ctx.lineTo(80, 0);
@@ -177,7 +246,7 @@ export class Dumpster {
         ctx.stroke();
 
         // Lid
-        ctx.fillStyle = '#1a6b1a';
+        ctx.fillStyle = SPIDERVERSE.symbioteGreenDark;
         ctx.beginPath();
         ctx.moveTo(0, 10);
         ctx.lineTo(80, 0);
@@ -187,28 +256,44 @@ export class Dumpster {
         ctx.fill();
         ctx.stroke();
 
-        // Graffiti
-        ctx.fillStyle = '#ff00ff';
-        ctx.font = '10px Arial';
-        ctx.fillText('TRASH', 20, 30);
+        // Graffiti - Neon pink
+        ctx.fillStyle = SPIDERVERSE.pink;
+        ctx.font = 'bold 10px Bangers, Arial';
+        ctx.fillText('TRASH', 20, 32);
 
         ctx.restore();
     }
 }
 
 export class ConstructionBarrier {
-    constructor(logicalWidth, gameSpeed) { // Adjusted to use logicalWidth
+    constructor(logicalWidth, gameSpeed) {
         this.w = 60;
         this.h = 40;
-        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.x = logicalWidth + 50;
         this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
+        this.gameSpeed = gameSpeed;
+        this.lightBlink = 0;
+        this._poolActive = false;
     }
 
-    update() {
-        this.x -= this.gameSpeed;
+    reset(logicalWidth, gameSpeed) {
+        this.x = logicalWidth + 50;
+        this.y = GAME_HEIGHT - 50 - this.h;
+        this.markedForDeletion = false;
+        this.gameSpeed = gameSpeed;
+        this.lightBlink = 0;
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * dtMult;
+        this.lightBlink += 0.1 * dtMult;
         if (this.x < -this.w) this.markedForDeletion = true;
+        return this.markedForDeletion;
     }
 
     getBounds() {
@@ -220,8 +305,10 @@ export class ConstructionBarrier {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        const quality = getCurrentQuality();
+
         // Outline
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = SPIDERVERSE.white;
         ctx.lineWidth = 2;
 
         // Legs
@@ -231,13 +318,13 @@ export class ConstructionBarrier {
         ctx.strokeRect(5, 0, 5, 40);
         ctx.strokeRect(50, 0, 5, 40);
 
-        // Board
-        ctx.fillStyle = '#ff6600';
+        // Board - Orange
+        ctx.fillStyle = SPIDERVERSE.orangeHot;
         ctx.fillRect(0, 10, 60, 15);
         ctx.strokeRect(0, 10, 60, 15);
 
-        // Stripes
-        ctx.fillStyle = '#fff';
+        // Stripes - White
+        ctx.fillStyle = SPIDERVERSE.white;
         ctx.beginPath();
         ctx.moveTo(10, 10); ctx.lineTo(20, 10); ctx.lineTo(10, 25); ctx.lineTo(0, 25);
         ctx.fill();
@@ -248,8 +335,15 @@ export class ConstructionBarrier {
         ctx.moveTo(50, 10); ctx.lineTo(60, 10); ctx.lineTo(50, 25); ctx.lineTo(40, 25);
         ctx.fill();
 
-        // Light
-        ctx.fillStyle = '#ffff00';
+        // Blinking light with glow
+        const lightOn = Math.sin(this.lightBlink * 5) > 0;
+
+        if (lightOn && quality.glowEffects) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = SPIDERVERSE.yellow;
+        }
+
+        ctx.fillStyle = lightOn ? SPIDERVERSE.yellow : SPIDERVERSE.yellowDark;
         ctx.beginPath();
         ctx.arc(30, 5, 4, 0, Math.PI * 2);
         ctx.fill();
@@ -270,21 +364,52 @@ export class StormCloud {
         this.pulseAnim = Math.random() * Math.PI * 2;
         this.hasLightning = false;
         this.lightningCooldown = 0;
+        this.lightningDuration = 0; // Frame-based timer instead of setTimeout
+        this._poolActive = false;
     }
 
-    update() {
-        this.x -= this.speed;
-        this.pulseAnim += 0.05;
-        if (this.lightningCooldown > 0) this.lightningCooldown--;
+    reset(x, logicalWidth, gameSpeed) {
+        this.x = x !== undefined ? x : logicalWidth;
+        this.y = 20 + Math.random() * 50;
+        this.markedForDeletion = false;
+        this.speed = gameSpeed * 0.5;
+        this.pulseAnim = Math.random() * Math.PI * 2;
+        this.hasLightning = false;
+        this.lightningCooldown = 0;
+        this.lightningDuration = 0;
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+        this.hasLightning = false;
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.speed * dtMult;
+        this.pulseAnim += 0.05 * dtMult;
+
+        // Cooldown countdown
+        if (this.lightningCooldown > 0) {
+            this.lightningCooldown -= dtMult;
+        }
+
+        // Lightning duration (frame-based, replaces setTimeout)
+        if (this.lightningDuration > 0) {
+            this.lightningDuration -= dtMult;
+            if (this.lightningDuration <= 0) {
+                this.hasLightning = false;
+            }
+        }
+
         if (this.x < -this.w) this.markedForDeletion = true;
-        return !this.markedForDeletion;
+        return this.markedForDeletion;
     }
 
     spawnLightning() {
         if (this.lightningCooldown <= 0) {
             this.hasLightning = true;
-            this.lightningCooldown = 200;
-            setTimeout(() => this.hasLightning = false, 500);
+            this.lightningCooldown = 200; // ~3.3 seconds at 60fps
+            this.lightningDuration = 30; // ~0.5 seconds at 60fps (replaces setTimeout)
             return { x: this.x + this.w / 2, y: this.y + this.h };
         }
         return null;
@@ -295,6 +420,7 @@ export class StormCloud {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        const quality = getCurrentQuality();
         const pulse = Math.sin(this.pulseAnim) * 0.1;
 
         // Cloud shadow
@@ -305,9 +431,9 @@ export class StormCloud {
 
         // Main cloud body - dark storm cloud
         const cloudGrad = ctx.createRadialGradient(this.w * 0.5, this.h * 0.4, 5, this.w * 0.5, this.h * 0.4, this.w * 0.5);
-        cloudGrad.addColorStop(0, '#4a4a6a');
-        cloudGrad.addColorStop(0.5, '#3a3a5a');
-        cloudGrad.addColorStop(1, '#2a2a4a');
+        cloudGrad.addColorStop(0, SPIDERVERSE.bgSurface);
+        cloudGrad.addColorStop(0.5, SPIDERVERSE.bgNear);
+        cloudGrad.addColorStop(1, SPIDERVERSE.bgMid);
         ctx.fillStyle = cloudGrad;
 
         // Multiple ellipses for fluffy cloud shape
@@ -323,6 +449,11 @@ export class StormCloud {
 
         // Inner glow when charged
         if (this.hasLightning) {
+            if (quality.glowEffects) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = SPIDERVERSE.electricBlue;
+            }
+
             const innerGlow = ctx.createRadialGradient(this.w * 0.5, this.h * 0.6, 5, this.w * 0.5, this.h * 0.6, 30);
             innerGlow.addColorStop(0, 'rgba(0, 191, 255, 0.6)');
             innerGlow.addColorStop(1, 'transparent');
@@ -330,6 +461,8 @@ export class StormCloud {
             ctx.beginPath();
             ctx.ellipse(this.w * 0.5, this.h * 0.6, 30, 20, 0, 0, Math.PI * 2);
             ctx.fill();
+
+            ctx.shadowBlur = 0;
         }
 
         // Outline
@@ -350,8 +483,27 @@ export class ElectroBolt {
         this.flickerAnim = 0;
         this.markedForDeletion = false;
         this.life = 60;
+        this.maxLife = 60;
+        this.gameSpeed = gameSpeed;
+        this._poolActive = false;
+        this.generateBolt();
+    }
+
+    reset(cloudX, cloudY, gameSpeed) {
+        this.x = cloudX - 20;
+        this.y = cloudY;
+        this.h = GAME_HEIGHT - cloudY - 60;
+        this.flickerAnim = 0;
+        this.markedForDeletion = false;
+        this.life = this.maxLife;
         this.gameSpeed = gameSpeed;
         this.generateBolt();
+    }
+
+    deactivate() {
+        this.markedForDeletion = true;
+        this.points = [];
+        this.branches = [];
     }
 
     generateBolt() {
@@ -383,12 +535,13 @@ export class ElectroBolt {
         }
     }
 
-    update() {
-        this.x -= this.gameSpeed * 0.15;
-        this.flickerAnim += 0.5;
-        this.life--;
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * 0.15 * dtMult;
+        this.flickerAnim += 0.5 * dtMult;
+        this.life -= dtMult;
         if (Math.random() < 0.15) this.generateBolt();
         if (this.life <= 0) this.markedForDeletion = true;
+        return this.markedForDeletion;
     }
 
     draw(ctx, scaleRatio) {
@@ -396,12 +549,15 @@ export class ElectroBolt {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        const quality = getCurrentQuality();
         const flash = Math.sin(this.flickerAnim * 8) > 0;
-        const alpha = this.life / 60;
+        const alpha = Math.max(0, this.life / this.maxLife);
 
         // Outer glow
-        ctx.shadowColor = '#00bfff';
-        ctx.shadowBlur = 20;
+        if (quality.glowEffects) {
+            ctx.shadowColor = SPIDERVERSE.electricBlue;
+            ctx.shadowBlur = 20;
+        }
 
         // Main bolt
         ctx.strokeStyle = flash ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 191, 255, ${alpha})`;
@@ -418,14 +574,14 @@ export class ElectroBolt {
         // Branches
         ctx.lineWidth = 2;
         ctx.strokeStyle = `rgba(0, 191, 255, ${alpha * 0.7})`;
-        this.branches.forEach(branch => {
+        for (const branch of this.branches) {
             ctx.beginPath();
             ctx.moveTo(branch[0].x, branch[0].y);
             for (let i = 1; i < branch.length; i++) {
                 ctx.lineTo(branch[i].x, branch[i].y);
             }
             ctx.stroke();
-        });
+        }
 
         // Inner core
         ctx.shadowBlur = 0;
@@ -439,8 +595,8 @@ export class ElectroBolt {
         ctx.stroke();
 
         // Impact sparks at bottom
-        if (flash && this.life > 30) {
-            ctx.fillStyle = '#00ffff';
+        if (flash && this.life > this.maxLife * 0.5) {
+            ctx.fillStyle = SPIDERVERSE.cyan;
             const lastPoint = this.points[this.points.length - 1];
             for (let i = 0; i < 6; i++) {
                 const angle = Math.random() * Math.PI;
@@ -472,16 +628,48 @@ export class Building {
         this.h = 80 + Math.random() * 120;
         this.y = GAME_HEIGHT - 50 - this.h;
         this.windows = [];
+        this._initWindows();
+        this.gameSpeed = gameSpeed;
+        this._poolActive = false;
+    }
+
+    _initWindows() {
+        this.windows.length = 0;
         for (let wy = 10; wy < this.h - 15; wy += 15) {
             for (let wx = 8; wx < this.w - 8; wx += 12) {
-                this.windows.push({ x: wx, y: wy, lit: Math.random() > 0.4 });
+                this.windows.push({
+                    x: wx,
+                    y: wy,
+                    lit: Math.random() > 0.4,
+                    flicker: Math.random() < 0.1 // Some windows flicker
+                });
             }
         }
+    }
+
+    reset(x, logicalWidth, gameSpeed) {
+        this.x = x || logicalWidth + Math.random() * 100;
+        this.w = 50 + Math.random() * 60;
+        this.h = 80 + Math.random() * 120;
+        this.y = GAME_HEIGHT - 50 - this.h;
+        this._initWindows();
         this.gameSpeed = gameSpeed;
     }
 
-    update() {
-        this.x -= this.gameSpeed * 0.12;
+    deactivate() {
+        // Clean up
+    }
+
+    update(dtMult = 1) {
+        this.x -= this.gameSpeed * 0.12 * dtMult;
+
+        // Random window flickering
+        for (const w of this.windows) {
+            if (w.flicker && Math.random() < 0.02) {
+                w.lit = !w.lit;
+            }
+        }
+
         return this.x + this.w < -50;
     }
 
@@ -490,19 +678,28 @@ export class Building {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
-        // Building
+        const quality = getCurrentQuality();
+
+        // Building with gradient
         const grad = ctx.createLinearGradient(0, 0, this.w, 0);
-        grad.addColorStop(0, '#2a2a4a');
-        grad.addColorStop(0.1, '#1a1a3a');
-        grad.addColorStop(1, '#1a1a3a');
+        grad.addColorStop(0, SPIDERVERSE.bgSurface);
+        grad.addColorStop(0.1, SPIDERVERSE.bgNear);
+        grad.addColorStop(1, SPIDERVERSE.bgNear);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, this.w, this.h);
 
-        // Windows
-        this.windows.forEach(w => {
-            ctx.fillStyle = w.lit ? '#ffff66' : '#0a0a1a';
+        // Windows with glow for lit ones
+        for (const w of this.windows) {
+            if (w.lit && quality.glowEffects) {
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = SPIDERVERSE.yellowLight;
+            } else {
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.fillStyle = w.lit ? SPIDERVERSE.yellowLight : SPIDERVERSE.bgDeep;
             ctx.fillRect(w.x, w.y, 6, 8);
-        });
+        }
 
         ctx.restore();
     }

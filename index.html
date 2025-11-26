@@ -42,8 +42,8 @@
     <meta property="twitter:image" content="https://symbiote-rush.up.railway.app/og-image.png">
 
     <!-- Additional Meta -->
-    <meta name="theme-color" content="#ff1493">
-    <meta name="msapplication-TileColor" content="#ff1493">
+    <meta name="theme-color" content="#ff00ff">
+    <meta name="msapplication-TileColor" content="#ff00ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Symbiote Rush">
@@ -98,20 +98,74 @@
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div class="ui-layer">
+            <!-- FPS Counter -->
+            <div id="fps-counter">60 FPS</div>
+
+            <!-- Settings Button -->
+            <button id="settings-btn" aria-label="Settings">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19.14,12.94c0.04-0.31,0.06-0.63,0.06-0.94c0-0.31-0.02-0.63-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.37,4.82,11.69,4.82,12s0.02,0.63,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
+            </button>
+
+            <!-- Settings Panel -->
+            <div id="settings-panel">
+                <h3>SETTINGS</h3>
+
+                <div class="setting-group">
+                    <label for="animation-style">Animation Style</label>
+                    <select id="animation-style">
+                        <option value="smooth">Smooth (60fps)</option>
+                        <option value="spiderverse" selected>Spider-Verse (12fps)</option>
+                        <option value="comic">Comic Book (8fps)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="quality-setting">Graphics Quality</label>
+                    <select id="quality-setting">
+                        <option value="low">Low (Best Performance)</option>
+                        <option value="medium">Medium (Balanced)</option>
+                        <option value="high" selected>High (Best Visuals)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <div class="toggle-container">
+                        <label for="sound-toggle">Sound Effects</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="sound-toggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score Display -->
             <div class="score-container">
                 <span id="hi-score">HI 00000</span>
                 <span id="current-score">00000</span>
             </div>
+
+            <!-- Combo Display -->
+            <div id="combo-display"></div>
+
+            <!-- Near Miss Indicator -->
+            <div id="near-miss-indicator">CLOSE!</div>
+
+            <!-- Start Screen -->
             <div id="start-screen">
                 <div id="start-text">PRESS SPACE TO START</div>
-                <div id="mobile-hint" style="display:none; font-size: 18px; margin-top: 20px; color: #00bfff;">TAP TO
+                <div id="mobile-hint" style="display:none; font-size: 18px; margin-top: 20px; color: #00ffff;">TAP TO
                     JUMP</div>
             </div>
+
+            <!-- Game Over Screen -->
             <div id="game-over-screen">
                 <div id="game-over-text">GAME OVER</div>
                 <div id="death-reason"></div>
                 <div id="final-score"></div>
-                <button id="restart-icon">
+                <button id="restart-icon" aria-label="Restart Game">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
@@ -121,7 +175,7 @@
 
             <!-- GDPR Banner -->
             <div id="gdpr-banner" style="display: none;">
-                <p>We use local storage to save your high score. Is that okay?</p>
+                <p>We use local storage to save your high score and settings. Is that okay?</p>
                 <div class="gdpr-buttons">
                     <button id="gdpr-accept">Accept</button>
                     <button id="gdpr-decline">Decline</button>

@@ -1,5 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&display=swap');
 
+/* ============================================
+   CSS VARIABLES (Spider-Verse Palette)
+   ============================================ */
+:root {
+    --sv-pink: #ff00ff;
+    --sv-pink-light: #ff66ff;
+    --sv-pink-dark: #cc00cc;
+    --sv-cyan: #00ffff;
+    --sv-cyan-light: #66ffff;
+    --sv-cyan-dark: #00cccc;
+    --sv-yellow: #ffff00;
+    --sv-yellow-light: #ffff66;
+    --sv-purple: #aa00ff;
+    --sv-purple-deep: #6600cc;
+    --sv-orange: #ff3300;
+    --sv-electric-blue: #00bfff;
+    --sv-bg-deep: #050510;
+    --sv-bg-mid: #0a0a1a;
+    --sv-bg-near: #1a1a3a;
+    --sv-bg-surface: #2a2a4a;
+    --sv-white: #ffffff;
+    --sv-black: #000000;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -7,8 +31,8 @@
 body {
     margin: 0;
     padding: 0;
-    background: #0a0a1a;
-    color: #fff;
+    background: var(--sv-bg-mid);
+    color: var(--sv-white);
     font-family: 'Bangers', cursive;
     overflow: hidden;
     width: 100vw;
@@ -18,13 +42,16 @@ body {
     touch-action: none;
 }
 
+/* ============================================
+   GAME CONTAINER
+   ============================================ */
 #game-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, #0d0d2b 0%, #1a1a3a 100%);
+    background: linear-gradient(180deg, var(--sv-bg-deep) 0%, var(--sv-bg-near) 100%);
     overflow: hidden;
     touch-action: none;
 }
@@ -36,6 +63,9 @@ canvas {
     touch-action: none;
 }
 
+/* ============================================
+   UI LAYER
+   ============================================ */
 .ui-layer {
     position: absolute;
     top: 0;
@@ -49,20 +79,62 @@ canvas {
     align-items: center;
 }
 
+/* ============================================
+   SCORE DISPLAY
+   ============================================ */
 .score-container {
     position: absolute;
     top: 20px;
     right: 30px;
     font-family: 'Press Start 2P', monospace;
     font-size: 14px;
-    color: #fff;
-    background: linear-gradient(135deg, #ff1493, #00bfff);
+    color: var(--sv-white);
+    background: linear-gradient(135deg, var(--sv-pink), var(--sv-electric-blue));
     padding: 12px 18px;
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(255, 20, 147, 0.4);
+    box-shadow:
+        0 4px 20px rgba(255, 0, 255, 0.4),
+        0 0 30px rgba(0, 191, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     z-index: 20;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
+.score-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, var(--sv-pink), var(--sv-cyan));
+    border-radius: 10px;
+    z-index: -1;
+    opacity: 0.5;
+    filter: blur(8px);
+}
+
+/* ============================================
+   FPS COUNTER
+   ============================================ */
+#fps-counter {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--sv-cyan);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--sv-cyan-dark);
+    z-index: 20;
+    opacity: 0.8;
+}
+
+/* ============================================
+   START SCREEN
+   ============================================ */
 #start-screen {
     text-align: center;
     z-index: 25;
@@ -70,53 +142,89 @@ canvas {
 
 #start-text {
     font-size: 38px;
-    color: #fff;
-    text-shadow: 0 0 30px rgba(255, 20, 147, 0.8), 0 0 60px rgba(0, 191, 255, 0.5);
-    animation: pulse 1.5s infinite;
+    color: var(--sv-white);
+    text-shadow:
+        0 0 30px rgba(255, 0, 255, 0.8),
+        0 0 60px rgba(0, 255, 255, 0.5),
+        4px 4px 0 var(--sv-pink),
+        -2px -2px 0 var(--sv-cyan);
+    animation: pulse 1.5s infinite, glitch 5s infinite;
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: scale(1);
         opacity: 1;
     }
-
     50% {
         transform: scale(1.05);
         opacity: 0.9;
     }
 }
 
+@keyframes glitch {
+    0%, 94%, 100% {
+        transform: translate(0);
+    }
+    95% {
+        transform: translate(-2px, 1px);
+        text-shadow:
+            2px 0 var(--sv-cyan),
+            -2px 0 var(--sv-pink);
+    }
+    96% {
+        transform: translate(2px, -1px);
+    }
+    97% {
+        transform: translate(-1px, 2px);
+        text-shadow:
+            -2px 0 var(--sv-pink),
+            2px 0 var(--sv-cyan);
+    }
+}
+
+/* ============================================
+   GAME OVER SCREEN
+   ============================================ */
 #game-over-screen {
     display: none;
     text-align: center;
     z-index: 30;
-    background: rgba(10, 10, 30, 0.95);
+    background: rgba(5, 5, 16, 0.95);
     padding: 40px 50px;
     border-radius: 16px;
-    box-shadow: 0 0 60px rgba(255, 20, 147, 0.5);
+    box-shadow:
+        0 0 60px rgba(255, 0, 255, 0.5),
+        0 0 100px rgba(0, 255, 255, 0.3),
+        inset 0 0 60px rgba(0, 0, 0, 0.5);
+    border: 3px solid;
+    border-image: linear-gradient(135deg, var(--sv-pink), var(--sv-cyan)) 1;
 }
 
 #game-over-text {
     font-size: 48px;
-    color: #fff;
-    text-shadow: 0 0 20px #ff1493;
+    color: var(--sv-white);
+    text-shadow:
+        0 0 20px var(--sv-pink),
+        0 0 40px var(--sv-pink-dark),
+        3px 3px 0 var(--sv-purple-deep);
     margin-bottom: 10px;
+    letter-spacing: 4px;
 }
 
 #death-reason {
     font-size: 18px;
-    color: #ff6b6b;
+    color: var(--sv-orange);
     margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 51, 0, 0.5);
 }
 
 #final-score {
     font-family: 'Press Start 2P', monospace;
     font-size: 16px;
-    color: #ffff00;
+    color: var(--sv-yellow);
     margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
 }
 
 #restart-icon {
@@ -124,42 +232,229 @@ canvas {
     height: 60px;
     cursor: pointer;
     pointer-events: auto;
-    background: linear-gradient(135deg, #ff1493, #00bfff);
+    background: linear-gradient(135deg, var(--sv-pink), var(--sv-electric-blue));
     border: none;
     padding: 14px;
     border-radius: 50%;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 20px rgba(0, 191, 255, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow:
+        0 4px 20px rgba(0, 191, 255, 0.5),
+        0 0 30px rgba(255, 0, 255, 0.3);
 }
 
 #restart-icon:hover {
     transform: scale(1.1) rotate(180deg);
-    box-shadow: 0 6px 30px rgba(255, 20, 147, 0.7);
+    box-shadow:
+        0 6px 30px rgba(255, 0, 255, 0.7),
+        0 0 50px rgba(0, 255, 255, 0.5);
+}
+
+#restart-icon:active {
+    transform: scale(0.95) rotate(180deg);
 }
 
 #restart-icon svg {
-    fill: #fff;
+    fill: var(--sv-white);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
 
-/* GDPR Banner */
+/* ============================================
+   SETTINGS PANEL
+   ============================================ */
+#settings-btn {
+    position: absolute;
+    top: 20px;
+    left: 60px;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--sv-pink);
+    border-radius: 8px;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#settings-btn:hover {
+    background: rgba(255, 0, 255, 0.2);
+    box-shadow: 0 0 15px var(--sv-pink);
+    transform: rotate(45deg);
+}
+
+#settings-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--sv-pink);
+}
+
+#settings-panel {
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 20px;
+    background: rgba(5, 5, 16, 0.95);
+    border: 2px solid var(--sv-pink);
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 50;
+    pointer-events: auto;
+    min-width: 260px;
+    box-shadow:
+        0 0 30px rgba(255, 0, 255, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#settings-panel.open {
+    display: block;
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#settings-panel h3 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    color: var(--sv-pink);
+    text-shadow: 0 0 10px var(--sv-pink);
+    border-bottom: 1px solid var(--sv-pink-dark);
+    padding-bottom: 10px;
+}
+
+.setting-group {
+    margin-bottom: 15px;
+}
+
+.setting-group label {
+    display: block;
+    font-size: 14px;
+    color: var(--sv-cyan);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.setting-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--sv-bg-surface);
+    border: 2px solid var(--sv-cyan-dark);
+    border-radius: 6px;
+    color: var(--sv-white);
+    font-family: 'Bangers', cursive;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.setting-group select:hover {
+    border-color: var(--sv-cyan);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.setting-group select:focus {
+    outline: none;
+    border-color: var(--sv-pink);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+}
+
+.setting-group select option {
+    background: var(--sv-bg-mid);
+    color: var(--sv-white);
+}
+
+/* Toggle Switch */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--sv-bg-surface);
+    border: 2px solid var(--sv-cyan-dark);
+    border-radius: 26px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: '';
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--sv-white);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--sv-pink);
+    border-color: var(--sv-pink-light);
+    box-shadow: 0 0 10px var(--sv-pink);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+}
+
+/* ============================================
+   GDPR BANNER
+   ============================================ */
 #gdpr-banner {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(10, 10, 26, 0.95);
-    border-top: 2px solid #ff1493;
+    background: rgba(5, 5, 16, 0.98);
+    border-top: 3px solid var(--sv-pink);
     padding: 20px;
     text-align: center;
     z-index: 100;
     pointer-events: auto;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+    box-shadow:
+        0 -5px 30px rgba(0, 0, 0, 0.8),
+        0 -2px 20px rgba(255, 0, 255, 0.3);
 }
 
 #gdpr-banner p {
     margin: 0 0 15px 0;
     font-size: 16px;
-    color: #fff;
+    color: var(--sv-white);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gdpr-buttons {
@@ -169,31 +464,115 @@ canvas {
 }
 
 .gdpr-buttons button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-family: 'Bangers', cursive;
     font-size: 18px;
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: all 0.2s ease;
+    letter-spacing: 1px;
 }
 
 #gdpr-accept {
-    background: #00bfff;
-    color: #000;
+    background: linear-gradient(135deg, var(--sv-cyan), var(--sv-electric-blue));
+    color: var(--sv-black);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
+}
+
+#gdpr-accept:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0, 255, 255, 0.6);
 }
 
 #gdpr-decline {
     background: transparent;
-    border: 2px solid #ff1493;
-    color: #fff;
+    border: 2px solid var(--sv-pink);
+    color: var(--sv-pink);
+}
+
+#gdpr-decline:hover {
+    background: rgba(255, 0, 255, 0.2);
+    box-shadow: 0 0 15px var(--sv-pink);
 }
 
 .gdpr-buttons button:active {
     transform: scale(0.95);
 }
 
-@media (max-width: 600px) {
+/* ============================================
+   COMBO DISPLAY
+   ============================================ */
+#combo-display {
+    position: absolute;
+    top: 80px;
+    right: 30px;
+    font-family: 'Bangers', cursive;
+    font-size: 24px;
+    color: var(--sv-yellow);
+    text-shadow:
+        0 0 20px var(--sv-yellow),
+        2px 2px 0 var(--sv-orange);
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#combo-display.active {
+    opacity: 1;
+    animation: comboPop 0.3s ease;
+}
+
+@keyframes comboPop {
+    0% {
+        transform: scale(0.5);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ============================================
+   NEAR MISS INDICATOR
+   ============================================ */
+#near-miss-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bangers', cursive;
+    font-size: 36px;
+    color: var(--sv-cyan);
+    text-shadow:
+        0 0 30px var(--sv-cyan),
+        0 0 60px var(--sv-cyan-dark);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#near-miss-indicator.flash {
+    animation: nearMissFlash 0.5s ease;
+}
+
+@keyframes nearMissFlash {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
     #start-text {
         font-size: 28px;
     }
@@ -208,4 +587,104 @@ canvas {
         padding: 8px 12px;
         font-size: 10px;
     }
+
+    #fps-counter {
+        top: 10px;
+        left: 10px;
+        font-size: 8px;
+        padding: 4px 6px;
+    }
+
+    #settings-btn {
+        top: 10px;
+        left: 45px;
+        width: 30px;
+        height: 30px;
+    }
+
+    #settings-panel {
+        top: 50px;
+        left: 10px;
+        right: 10px;
+        min-width: auto;
+    }
+
+    #game-over-screen {
+        padding: 25px 30px;
+        margin: 0 15px;
+    }
+
+    #combo-display {
+        top: 60px;
+        right: 10px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    #start-text {
+        font-size: 22px;
+    }
+
+    #game-over-text {
+        font-size: 28px;
+    }
+
+    #final-score {
+        font-size: 12px;
+    }
+
+    #restart-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .gdpr-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .gdpr-buttons button {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   LOADING INDICATOR
+   ============================================ */
+#loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--sv-bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--sv-bg-surface);
+    border-top-color: var(--sv-pink);
+    border-right-color: var(--sv-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    margin-top: 20px;
+    font-size: 18px;
+    color: var(--sv-pink);
+    animation: pulse 1s infinite;
 }
