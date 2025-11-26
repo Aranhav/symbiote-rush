@@ -71,7 +71,17 @@ checkGDPRConsent();
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    scaleRatio = canvas.height / GAME_HEIGHT;
+
+    // Enforce minimum logical width to prevent zooming in too much on portrait
+    const MIN_LOGICAL_WIDTH = 600;
+    const widthScale = canvas.width / MIN_LOGICAL_WIDTH;
+    const heightScale = canvas.height / GAME_HEIGHT;
+
+    // Use the smaller scale to fit the game
+    scaleRatio = Math.min(widthScale, heightScale);
+
+    // If screen is taller than game (portrait), we'll have extra vertical space
+    // We can just draw more sky at the top, so we align to bottom
     logicalWidth = canvas.width / scaleRatio;
 
     // Show mobile hint if on small screen

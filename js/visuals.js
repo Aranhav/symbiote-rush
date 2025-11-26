@@ -135,19 +135,19 @@ export function drawActionLines(ctx, canvas, scaleRatio, isPlaying) {
 }
 
 export function drawSpiderVerseOverlay(ctx, canvas, scaleRatio, frame) {
-    // Vignette
+    // Vignette (Reduced opacity)
     const vignette = ctx.createRadialGradient(
         canvas.width / 2, canvas.height / 2, canvas.height * 0.2,
         canvas.width / 2, canvas.height / 2, canvas.height * 0.9
     );
     vignette.addColorStop(0, 'transparent');
-    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+    vignette.addColorStop(1, 'rgba(0, 0, 0, 0.3)'); // Reduced from 0.5
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Scan lines (more visible)
+    // Scan lines (Reduced opacity)
     ctx.save();
-    ctx.globalAlpha = 0.08;
+    ctx.globalAlpha = 0.03; // Reduced from 0.08
     ctx.fillStyle = '#000';
     for (let y = 0; y < canvas.height; y += 3) {
         ctx.fillRect(0, y, canvas.width, 1);

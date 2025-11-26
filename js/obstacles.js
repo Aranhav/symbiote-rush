@@ -39,43 +39,40 @@ export class TaxiCab {
         ctx.roundRect(15, 2, 25, 12, [4, 4, 0, 0]);
         ctx.fill();
 
-        // Windows
-        ctx.fillStyle = '#87ceeb';
-        ctx.fillRect(18, 4, 8, 8);
-        ctx.fillRect(29, 4, 8, 8);
+        // Outline for visibility
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
 
-        // Taxi sign
-        ctx.fillStyle = '#fff';
+        // Body
+        ctx.fillStyle = '#ffcc00';
         ctx.beginPath();
-        ctx.roundRect(22, 0, 12, 4, 2);
+        ctx.moveTo(10, 20);
+        ctx.lineTo(30, 20);
+        ctx.lineTo(40, 40);
+        ctx.lineTo(0, 40);
+        ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+
+        // Top light
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(15, 15, 10, 5);
+        ctx.strokeRect(15, 15, 10, 5);
+
+        // Checkers
+        ctx.fillStyle = '#000';
+        ctx.fillRect(5, 30, 5, 5);
+        ctx.fillRect(15, 30, 5, 5);
+        ctx.fillRect(25, 30, 5, 5);
+        ctx.fillRect(10, 35, 5, 5);
+        ctx.fillRect(20, 35, 5, 5);
+        ctx.fillRect(30, 35, 5, 5);
 
         // Wheels
-        ctx.fillStyle = '#1a1a1a';
+        ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(12, 28, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(48, 28, 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Hubcaps
-        ctx.fillStyle = '#888';
-        ctx.beginPath();
-        ctx.arc(12, 28, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(48, 28, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Lights
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(57, 18, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ff0000';
-        ctx.beginPath();
-        ctx.arc(3, 18, 2, 0, Math.PI * 2);
+        ctx.arc(10, 40, 6, 0, Math.PI * 2);
+        ctx.arc(30, 40, 6, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
@@ -88,79 +85,75 @@ export class TaxiCab {
 
 export class FireHydrant {
     constructor(logicalWidth, gameSpeed) {
-        this.x = logicalWidth + 50;
-        this.y = GAME_HEIGHT - 70;
-        this.w = 16;
-        this.h = 22;
+        this.w = 30;
+        this.h = 40;
+        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed;
+        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
     }
 
     update() {
         this.x -= this.gameSpeed;
-        if (this.x + this.w < -50) this.markedForDeletion = true;
-    }
-
-    draw(ctx, scaleRatio) {
-        ctx.save();
-        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
-        ctx.scale(scaleRatio, scaleRatio);
-
-        // Body
-        const grad = ctx.createLinearGradient(0, 0, 16, 0);
-        grad.addColorStop(0, '#cc0000');
-        grad.addColorStop(0.5, '#ff3333');
-        grad.addColorStop(1, '#cc0000');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.roundRect(3, 4, 10, 16, 2);
-        ctx.fill();
-
-        // Top
-        ctx.fillStyle = '#ff0000';
-        ctx.beginPath();
-        ctx.roundRect(1, 0, 14, 6, [3, 3, 0, 0]);
-        ctx.fill();
-
-        // Nozzles
-        ctx.fillStyle = '#ff3333';
-        ctx.beginPath();
-        ctx.roundRect(-2, 8, 6, 5, 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.roundRect(12, 8, 6, 5, 2);
-        ctx.fill();
-
-        // Caps
-        ctx.fillStyle = '#ffff00';
-        ctx.beginPath();
-        ctx.arc(-1, 10, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(17, 10, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
+        if (this.x < -this.w) this.markedForDeletion = true;
     }
 
     getBounds() {
         return { x: this.x, y: this.y, w: this.w, h: this.h };
     }
+
+    draw(ctx, scaleRatio) {
+        ctx.save();
+        ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
+        ctx.scale(scaleRatio, scaleRatio);
+
+        // Outline
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+
+        // Body
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath();
+        ctx.rect(5, 10, 20, 30);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top
+        ctx.beginPath();
+        ctx.arc(15, 10, 10, Math.PI, 0);
+        ctx.fill();
+        ctx.stroke();
+
+        // Nozzles
+        ctx.fillStyle = '#ccc';
+        ctx.beginPath();
+        ctx.rect(0, 15, 5, 5);
+        ctx.rect(25, 15, 5, 5);
+        ctx.fill();
+        ctx.strokeRect(0, 15, 5, 5);
+        ctx.strokeRect(25, 15, 5, 5);
+
+        ctx.restore();
+    }
 }
 
 export class Dumpster {
-    constructor(logicalWidth, gameSpeed) {
-        this.x = logicalWidth + 50;
-        this.y = GAME_HEIGHT - 85;
-        this.w = 50;
-        this.h = 35;
+    constructor(logicalWidth, gameSpeed) { // Adjusted to use logicalWidth
+        this.w = 80;
+        this.h = 50;
+        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed;
+        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
     }
 
     update() {
         this.x -= this.gameSpeed;
-        if (this.x + this.w < -50) this.markedForDeletion = true;
+        if (this.x < -this.w) this.markedForDeletion = true;
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y, w: this.w, h: this.h };
     }
 
     draw(ctx, scaleRatio) {
@@ -168,53 +161,58 @@ export class Dumpster {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        // Outline
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+
         // Body
-        const grad = ctx.createLinearGradient(0, 5, 0, 35);
-        grad.addColorStop(0, '#3cb371');
-        grad.addColorStop(1, '#2e8b57');
-        ctx.fillStyle = grad;
+        ctx.fillStyle = '#228b22';
         ctx.beginPath();
-        ctx.roundRect(2, 8, 46, 27, 2);
+        ctx.moveTo(0, 10);
+        ctx.lineTo(80, 0);
+        ctx.lineTo(75, 50);
+        ctx.lineTo(5, 50);
+        ctx.closePath();
         ctx.fill();
+        ctx.stroke();
 
         // Lid
-        ctx.fillStyle = '#45da45';
+        ctx.fillStyle = '#1a6b1a';
         ctx.beginPath();
-        ctx.roundRect(0, 2, 50, 8, [3, 3, 0, 0]);
+        ctx.moveTo(0, 10);
+        ctx.lineTo(80, 0);
+        ctx.lineTo(80, 5);
+        ctx.lineTo(0, 15);
+        ctx.closePath();
         ctx.fill();
+        ctx.stroke();
 
-        // Wheels
-        ctx.fillStyle = '#1a1a1a';
-        ctx.beginPath();
-        ctx.arc(8, 35, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(42, 35, 4, 0, Math.PI * 2);
-        ctx.fill();
+        // Graffiti
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = '10px Arial';
+        ctx.fillText('TRASH', 20, 30);
 
         ctx.restore();
-    }
-
-    getBounds() {
-        return { x: this.x, y: this.y + 5, w: this.w, h: this.h - 5 };
     }
 }
 
 export class ConstructionBarrier {
-    constructor(logicalWidth, gameSpeed) {
-        this.x = logicalWidth + 50;
-        this.y = GAME_HEIGHT - 75;
-        this.w = 40;
-        this.h = 28;
-        this.lightAnim = 0;
+    constructor(logicalWidth, gameSpeed) { // Adjusted to use logicalWidth
+        this.w = 60;
+        this.h = 40;
+        this.x = logicalWidth + 50; // Adjusted to use logicalWidth
+        this.y = GAME_HEIGHT - 50 - this.h;
         this.markedForDeletion = false;
-        this.gameSpeed = gameSpeed;
+        this.gameSpeed = gameSpeed; // Adjusted to use gameSpeed
     }
 
     update() {
         this.x -= this.gameSpeed;
-        this.lightAnim += 0.15;
-        if (this.x + this.w < -50) this.markedForDeletion = true;
+        if (this.x < -this.w) this.markedForDeletion = true;
+    }
+
+    getBounds() {
+        return { x: this.x, y: this.y, w: this.w, h: this.h };
     }
 
     draw(ctx, scaleRatio) {
@@ -222,55 +220,53 @@ export class ConstructionBarrier {
         ctx.translate(this.x * scaleRatio, this.y * scaleRatio);
         ctx.scale(scaleRatio, scaleRatio);
 
+        // Outline
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+
         // Legs
-        ctx.fillStyle = '#ff6600';
-        ctx.fillRect(4, 20, 4, 8);
-        ctx.fillRect(32, 20, 4, 8);
+        ctx.fillStyle = '#888';
+        ctx.fillRect(5, 0, 5, 40);
+        ctx.fillRect(50, 0, 5, 40);
+        ctx.strokeRect(5, 0, 5, 40);
+        ctx.strokeRect(50, 0, 5, 40);
 
         // Board
         ctx.fillStyle = '#ff6600';
-        ctx.beginPath();
-        ctx.roundRect(0, 6, 40, 16, 2);
-        ctx.fill();
+        ctx.fillRect(0, 10, 60, 15);
+        ctx.strokeRect(0, 10, 60, 15);
 
         // Stripes
         ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 6, 8, 16);
-        ctx.fillRect(16, 6, 8, 16);
-        ctx.fillRect(32, 6, 8, 16);
-
-        // Light
-        const lightOn = Math.sin(this.lightAnim * 4) > 0;
-        ctx.fillStyle = lightOn ? '#ffff00' : '#aa8800';
         ctx.beginPath();
-        ctx.arc(20, 3, 4, 0, Math.PI * 2);
+        ctx.moveTo(10, 10); ctx.lineTo(20, 10); ctx.lineTo(10, 25); ctx.lineTo(0, 25);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(30, 10); ctx.lineTo(40, 10); ctx.lineTo(30, 25); ctx.lineTo(20, 25);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(50, 10); ctx.lineTo(60, 10); ctx.lineTo(50, 25); ctx.lineTo(40, 25);
         ctx.fill();
 
-        if (lightOn) {
-            const glowGrad = ctx.createRadialGradient(20, 3, 2, 20, 3, 10);
-            glowGrad.addColorStop(0, 'rgba(255, 255, 0, 0.5)');
-            glowGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = glowGrad;
-            ctx.beginPath();
-            ctx.arc(20, 3, 10, 0, Math.PI * 2);
-            ctx.fill();
-        }
+        // Light
+        ctx.fillStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.arc(30, 5, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
         ctx.restore();
-    }
-
-    getBounds() {
-        return { x: this.x, y: this.y + 6, w: this.w, h: this.h - 6 };
     }
 }
 
 export class StormCloud {
     constructor(x, logicalWidth, gameSpeed) {
-        this.x = x !== undefined ? x : logicalWidth + 100;
-        this.y = 30 + Math.random() * 40;
-        this.w = 80 + Math.random() * 40;
-        this.h = 35 + Math.random() * 15;
-        this.speed = gameSpeed * 0.15;
+        this.w = 100;
+        this.h = 60;
+        this.x = x !== undefined ? x : logicalWidth;
+        this.y = 20 + Math.random() * 50;
+        this.markedForDeletion = false;
+        this.speed = gameSpeed * 0.5;
         this.pulseAnim = Math.random() * Math.PI * 2;
         this.hasLightning = false;
         this.lightningCooldown = 0;
@@ -280,7 +276,18 @@ export class StormCloud {
         this.x -= this.speed;
         this.pulseAnim += 0.05;
         if (this.lightningCooldown > 0) this.lightningCooldown--;
-        return this.x + this.w < -50;
+        if (this.x < -this.w) this.markedForDeletion = true;
+        return !this.markedForDeletion;
+    }
+
+    spawnLightning() {
+        if (this.lightningCooldown <= 0) {
+            this.hasLightning = true;
+            this.lightningCooldown = 200;
+            setTimeout(() => this.hasLightning = false, 500);
+            return { x: this.x + this.w / 2, y: this.y + this.h };
+        }
+        return null;
     }
 
     draw(ctx, scaleRatio) {
@@ -325,17 +332,12 @@ export class StormCloud {
             ctx.fill();
         }
 
-        ctx.restore();
-    }
+        // Outline
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-    spawnLightning() {
-        if (this.lightningCooldown <= 0) {
-            this.hasLightning = true;
-            this.lightningCooldown = 200;
-            setTimeout(() => this.hasLightning = false, 500);
-            return new ElectroBolt(this.x + this.w * 0.5, this.y + this.h);
-        }
-        return null;
+        ctx.restore();
     }
 }
 

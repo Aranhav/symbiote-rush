@@ -5,16 +5,16 @@ export const JUMP_STRENGTH = -12;
 export const DOUBLE_JUMP_STRENGTH = -10;
 export const GAME_HEIGHT = 400;
 
-// Spider-Verse color palette (High Contrast)
+// Spider-Verse color palette (High Contrast & Neon)
 export const SPIDERVERSE = {
-    pink: '#ff00cc',      // Brighter pink
-    cyan: '#00ffff',      // Brighter cyan
-    yellow: '#ffff00',
-    purple: '#b300ff',    // Brighter purple
-    orange: '#ff4400',    // More vibrant orange
-    black: '#000000',     // Pure black
+    pink: '#ff00ff',      // Pure Neon Pink
+    cyan: '#00ffff',      // Pure Neon Cyan
+    yellow: '#ffff00',    // Pure Neon Yellow
+    purple: '#aa00ff',    // Vivid Purple
+    orange: '#ff3300',    // Vivid Orange
+    black: '#000000',     // Pure Black
     white: '#ffffff',
-    darkBlue: '#050510'   // Deep background blue
+    darkBlue: '#020205'   // Almost black blue for maximum contrast
 };
 
 export const KAIROSS_BRANDING = "KAIROSS.IN";
